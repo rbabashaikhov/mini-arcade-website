@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pong</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <main class="game-shell">
+      <header class="game-header">
+        <div>
+          <p class="eyebrow">Mini Arcade</p>
+          <h1>Pong</h1>
+          <p class="muted">First to 10 points wins.</p>
+        </div>
+        <button id="restartBtn" type="button">Restart</button>
+      </header>
+
+      <section class="scoreboard" aria-live="polite">
+        <div>
+          <span class="label">Player</span>
+          <span id="playerScore" class="value">0</span>
+        </div>
+        <div>
+          <span class="label">AI</span>
+          <span id="aiScore" class="value">0</span>
+        </div>
+        <div>
+          <span class="label">Best</span>
+          <span id="bestScore" class="value">0</span>
+        </div>
+      </section>
+
+      <canvas id="pongCanvas" width="800" height="500" aria-label="Pong game">
+      </canvas>
+
+      <p id="statusText" class="status muted">
+        Use W/S or Up/Down. Press Space to serve.
+      </p>
+    </main>
+
+    <script src="./game.js"></script>
+  </body>
+</html>

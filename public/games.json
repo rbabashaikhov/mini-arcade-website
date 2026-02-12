@@ -1,0 +1,20 @@
+[
+  {
+    "slug": "whack-a-mole",
+    "title": "Whack-a-Mole",
+    "description": "Tap the sneaky mole before it disappears.",
+    "controls": "Click or tap the mole. 30 seconds to score.",
+    "path": "games/whack-a-mole/index.html",
+    "tags": ["reflex", "tap"],
+    "difficulty": "Easy"
+  },
+  {
+    "slug": "pong",
+    "title": "Pong",
+    "description": "Classic paddle duel. First to 10 wins.",
+    "controls": "W/S or Up/Down. Space to serve.",
+    "path": "games/pong/index.html",
+    "tags": ["classic", "arcade"],
+    "difficulty": "Easy"
+  }
+]

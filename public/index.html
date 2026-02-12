@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Arcade Lab</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="page">
+      <header class="site-header">
+        <div class="brand">
+          <img src="./assets/logo.svg" alt="Arcade Lab logo" class="logo" />
+          <div>
+            <p class="eyebrow">Mini Arcade</p>
+            <h1>Arcade Lab</h1>
+          </div>
+        </div>
+        <div class="header-actions">
+          <label class="search">
+            <span class="sr-only">Search games</span>
+            <input
+              id="searchInput"
+              type="search"
+              placeholder="Search games"
+              autocomplete="off"
+            />
+          </label>
+          <button id="themeToggle" class="ghost-button" type="button">
+            Toggle theme
+          </button>
+        </div>
+      </header>
+
+      <main class="layout">
+        <section class="cards-panel">
+          <div class="panel-header">
+            <h2>Games</h2>
+            <p id="gamesCount" class="muted">Loading...</p>
+          </div>
+          <div id="cardsGrid" class="cards-grid" aria-live="polite">
+            <div class="card skeleton"></div>
+            <div class="card skeleton"></div>
+            <div class="card skeleton"></div>
+          </div>
+        </section>
+
+        <section class="play-panel">
+          <div class="panel-header">
+            <div>
+              <p class="eyebrow">Now playing</p>
+              <h2 id="nowPlayingTitle">Select a game</h2>
+            </div>
+            <p id="controlsHint" class="muted">Choose a card to begin.</p>
+          </div>
+
+          <div class="play-area">
+            <div id="iframeLoader" class="iframe-loader" aria-hidden="true">
+              <div class="spinner"></div>
+              <span>Loading game...</span>
+            </div>
+            <iframe
+              id="gameFrame"
+              title="Mini Arcade game"
+              loading="lazy"
+              scrolling="no"
+              sandbox="allow-scripts allow-same-origin"
+            ></iframe>
+          </div>
+
+          <div class="controls-bar" role="group" aria-label="Game controls">
+            <button id="restartBtn" class="primary-button" type="button">
+              Restart
+            </button>
+            <button id="fullscreenBtn" class="ghost-button" type="button">
+              Fullscreen
+            </button>
+            <button id="openBtn" class="ghost-button" type="button">
+              Open in new tab
+            </button>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
