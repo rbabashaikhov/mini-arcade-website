@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Snake</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <main id="gameShell" class="game-shell" tabindex="0">
+      <header class="game-header">
+        <div>
+          <p class="eyebrow">Mini Arcade</p>
+          <h1>Snake</h1>
+          <p class="muted">Eat apples, grow longer, and avoid crashing.</p>
+        </div>
+        <button id="restartBtn" type="button">Restart</button>
+      </header>
+
+      <section class="scoreboard" aria-live="polite">
+        <div>
+          <span class="label">Score</span>
+          <span id="scoreValue" class="value">0</span>
+        </div>
+        <div>
+          <span class="label">Best</span>
+          <span id="bestValue" class="value">0</span>
+        </div>
+        <div>
+          <span class="label">Speed</span>
+          <span id="speedValue" class="value">1</span>
+        </div>
+        <div class="wrap-toggle">
+          <label for="wrapToggle">Wrap walls</label>
+          <input id="wrapToggle" type="checkbox" />
+        </div>
+      </section>
+
+      <canvas id="snakeCanvas" width="600" height="400" aria-label="Snake game">
+      </canvas>
+
+      <p id="statusText" class="status muted">
+        Arrows/WASD to move. Space to pause. R to restart.
+      </p>
+    </main>
+
+    <script src="./game.js"></script>
+  </body>
+</html>

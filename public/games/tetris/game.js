@@ -89,11 +89,24 @@ let level = 1;
 let lines = 0;
 let bestScore = Number(localStorage.getItem(BEST_KEY)) || 0;
 
+const DAS_DELAY = 140;
+const ARR_INTERVAL = 35;
+const SOFT_DROP_INTERVAL = 45;
+const LOCK_DELAY = 450;
+
 let dropCounter = 0;
 let dropInterval = 800;
 let lastTime = 0;
 let isPaused = false;
 let isGameOver = false;
+let lockTimer = 0;
+let softDropActive = false;
+let moveLeftHeld = false;
+let moveRightHeld = false;
+let lastMoveDir = 0;
+let activeMoveDir = 0;
+let dasTimer = 0;
+let arrTimer = 0;
 
 function createBoard() {
   return Array.from({ length: ROWS }, () => Array(COLS).fill(null));
@@ -157,6 +170,8 @@ function spawnPiece() {
     isGameOver = true;
     statusText.textContent = "Game over. Press R to restart.";
   }
+  lockTimer = 0;
+  dropCounter = 0;
   ensureQueue();
 }
 
@@ -329,8 +344,63 @@ function rotatePiece(direction) {
     if (!collides(rotated, current.x + offset, current.y)) {
       current.matrix = rotated;
       current.x += offset;
+      resetLockDelay();
       return;
     }
+  }
+}
+
+function resetLockDelay() {
+  if (collides(current.matrix, current.x, current.y + 1)) {
+    lockTimer = 0;
+  }
+}
+
+function isGrounded() {
+  return collides(current.matrix, current.x, current.y + 1);
+}
+
+function stepDown() {
+  if (!isGrounded()) {
+    current.y += 1;
+    return true;
+  }
+  return false;
+}
+
+function updateHorizontalMovement(delta) {
+  let nextDir = 0;
+  if (moveLeftHeld && moveRightHeld) {
+    nextDir = lastMoveDir;
+  } else if (moveLeftHeld) {
+    nextDir = -1;
+  } else if (moveRightHeld) {
+    nextDir = 1;
+  }
+
+  if (nextDir === 0) {
+    activeMoveDir = 0;
+    dasTimer = 0;
+    arrTimer = 0;
+    return;
+  }
+
+  if (activeMoveDir !== nextDir) {
+    activeMoveDir = nextDir;
+    dasTimer = 0;
+    arrTimer = 0;
+    movePiece(activeMoveDir);
+    resetLockDelay();
+    return;
+  }
+
+  dasTimer += delta;
+  if (dasTimer < DAS_DELAY) return;
+  arrTimer += delta;
+  while (arrTimer >= ARR_INTERVAL) {
+    movePiece(activeMoveDir);
+    resetLockDelay();
+    arrTimer -= ARR_INTERVAL;
   }
 }
 
@@ -338,6 +408,8 @@ function lockPiece() {
   mergePiece();
   if (isGameOver) return;
   clearLines();
+  lockTimer = 0;
+  dropCounter = 0;
   spawnPiece();
 }
 
@@ -353,6 +425,14 @@ function resetGame() {
   lastTime = 0;
   isPaused = false;
   isGameOver = false;
+  lockTimer = 0;
+  softDropActive = false;
+  moveLeftHeld = false;
+  moveRightHeld = false;
+  lastMoveDir = 0;
+  activeMoveDir = 0;
+  dasTimer = 0;
+  arrTimer = 0;
   statusText.textContent =
     "Arrows move. Z/X rotate. Space hard drop. P pause. R restart.";
   updateScoreboard();
@@ -371,50 +451,108 @@ function update(time = 0) {
   const delta = time - lastTime;
   lastTime = time;
   if (!isPaused && !isGameOver) {
+    updateHorizontalMovement(delta);
     dropCounter += delta;
-    if (dropCounter > dropInterval) {
-      softDrop();
+    const currentDropInterval = softDropActive
+      ? SOFT_DROP_INTERVAL
+      : dropInterval;
+    if (dropCounter > currentDropInterval) {
+      dropCounter = 0;
+      if (!stepDown()) {
+        lockTimer = Math.max(lockTimer, 0);
+      }
+    }
+    if (isGrounded()) {
+      lockTimer += delta;
+      if (lockTimer >= LOCK_DELAY) {
+        lockPiece();
+      }
+    } else {
+      lockTimer = 0;
     }
   }
   draw();
   requestAnimationFrame(update);
 }
 
-function isGameFocused() {
-  return document.activeElement === canvas || document.activeElement === gameShell;
-}
-
-function handleKeydown(event, fromMessage = false) {
-  if (!fromMessage && !isGameFocused()) return;
+function handleKeyDown(event, fromMessage = false) {
   const { key, code } = event;
   const safeKey = key || "";
   const lowered = safeKey.toLowerCase();
+
+  // Safety: if ever typing into an input/textarea/contenteditable, don't hijack
+  const ae = document.activeElement;
+  const tag = ae?.tagName || "";
+  const isTyping =
+    tag === "INPUT" || tag === "TEXTAREA" || (ae && ae.isContentEditable);
+
+  if (!fromMessage && isTyping) return;
+
   const isSpace = safeKey === " " || code === "Space";
-  if (!fromMessage && (scrollKeys.has(key) || ["z", "x", "p", "r"].includes(lowered))) {
+
+  // Always prevent scroll for gameplay keys (even in fullscreen)
+  if (!fromMessage && (scrollKeys.has(safeKey) || isSpace || ["z", "x", "p", "r"].includes(lowered))) {
     event.preventDefault();
   }
-  if (safeKey === "ArrowLeft") movePiece(-1);
-  if (safeKey === "ArrowRight") movePiece(1);
-  if (safeKey === "ArrowDown") softDrop();
-  if (isSpace) hardDrop();
-  if (safeKey === "ArrowUp" || lowered === "x") rotatePiece(1);
-  if (lowered === "z") rotatePiece(-1);
-  if (lowered === "p") togglePause();
-  if (lowered === "r") resetGame();
+
+  // Prefer code to be stable across layouts
+  if (code === "ArrowLeft") {
+    if (!moveLeftHeld) {
+      moveLeftHeld = true;
+      lastMoveDir = -1;
+      activeMoveDir = 0;
+      dasTimer = 0;
+      arrTimer = 0;
+      movePiece(-1);
+      resetLockDelay();
+    }
+  }
+  if (code === "ArrowRight") {
+    if (!moveRightHeld) {
+      moveRightHeld = true;
+      lastMoveDir = 1;
+      activeMoveDir = 0;
+      dasTimer = 0;
+      arrTimer = 0;
+      movePiece(1);
+      resetLockDelay();
+    }
+  }
+  if (code === "ArrowDown") {
+    softDropActive = true;
+  }
+  if (code === "Space") hardDrop();
+  if (code === "ArrowUp" || code === "KeyX") rotatePiece(1);
+  if (code === "KeyZ") rotatePiece(-1);
+  if (code === "KeyP") togglePause();
+  if (code === "KeyR") resetGame();
 }
 
-function handleKeyup(event, fromMessage = false) {
-  if (!fromMessage && !isGameFocused()) return;
-  const { key } = event;
-  const safeKey = key || "";
-  const lowered = safeKey.toLowerCase();
-  if (!fromMessage && (scrollKeys.has(key) || ["z", "x", "p", "r"].includes(lowered))) {
-    event.preventDefault();
+
+function handleKeyUp(event, fromMessage = false) {
+  // keep for future (DAS/ARR), but prevent scroll if needed
+  if (!fromMessage) {
+    const { key, code } = event;
+    const safeKey = key || "";
+    const isSpace = safeKey === " " || code === "Space";
+    const lowered = safeKey.toLowerCase();
+    if (scrollKeys.has(safeKey) || isSpace || ["z", "x", "p", "r"].includes(lowered)) {
+      event.preventDefault();
+    }
+  }
+  if (event.code === "ArrowLeft") {
+    moveLeftHeld = false;
+  }
+  if (event.code === "ArrowRight") {
+    moveRightHeld = false;
+  }
+  if (event.code === "ArrowDown") {
+    softDropActive = false;
   }
 }
 
-window.addEventListener("keydown", handleKeydown);
-window.addEventListener("keyup", handleKeyup);
+window.addEventListener("keydown", handleKeyDown);
+window.addEventListener("keyup", handleKeyUp);
 
 window.addEventListener("message", (event) => {
   const data = event.data;
@@ -425,9 +563,9 @@ window.addEventListener("message", (event) => {
     preventDefault() {},
   };
   if (data.down) {
-    handleKeydown(synthetic, true);
+    handleKeyDown(synthetic, true);
   } else {
-    handleKeyup(synthetic, true);
+    handleKeyUp(synthetic, true);
   }
 });
 

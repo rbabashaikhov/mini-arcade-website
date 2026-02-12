@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pac-Man</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="game-shell" tabindex="0">
+      <header class="hud">
+        <div class="hud-left">
+          <span>Score: <strong id="score">0</strong></span>
+          <span>Best: <strong id="best">0</strong></span>
+        </div>
+        <div class="hud-right">
+          <span>Lives: <strong id="lives">3</strong></span>
+          <span>Level: <strong id="level">1</strong></span>
+        </div>
+      </header>
+      <div class="canvas-wrap">
+        <canvas id="game" width="380" height="420" aria-label="Pac-Man canvas"></canvas>
+        <div class="overlay" id="overlay"></div>
+      </div>
+      <footer class="hint">Arrows/WASD move · P pause · R restart</footer>
+    </div>
+    <script src="game.js"></script>
+  </body>
+</html>

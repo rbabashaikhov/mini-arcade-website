@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Space Invaders</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <main class="game-shell">
+      <header class="game-header">
+        <div>
+          <p class="eyebrow">Mini Arcade</p>
+          <h1>Space Invaders</h1>
+          <p class="muted">Defend Earth from descending invaders.</p>
+        </div>
+        <div class="header-actions">
+          <button id="pauseBtn" type="button">Pause</button>
+          <button id="restartBtn" type="button">Restart</button>
+        </div>
+      </header>
+
+      <section class="hud" aria-live="polite">
+        <div>
+          <span class="label">Score</span>
+          <span id="scoreValue" class="value">0</span>
+        </div>
+        <div>
+          <span class="label">Best</span>
+          <span id="bestValue" class="value">0</span>
+        </div>
+        <div>
+          <span class="label">Lives</span>
+          <span id="livesValue" class="value">3</span>
+        </div>
+        <div>
+          <span class="label">Level</span>
+          <span id="levelValue" class="value">1</span>
+        </div>
+        <div class="controls-hint">
+          <span class="label">Controls</span>
+          <span class="value">←/→ or A/D · Space · P · R</span>
+        </div>
+      </section>
+
+      <section class="canvas-shell">
+        <div
+          id="gameWrapper"
+          class="game-wrapper"
+          tabindex="0"
+          aria-label="Space Invaders game"
+        >
+          <canvas id="gameCanvas" width="720" height="520"></canvas>
+        </div>
+      </section>
+
+      <p id="statusText" class="status muted">
+        Space shoots. P pauses. R restarts.
+      </p>
+    </main>
+
+    <script src="./game.js"></script>
+  </body>
+</html>

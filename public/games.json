@@ -16,5 +16,41 @@
     "path": "games/pong/index.html",
     "tags": ["classic", "arcade"],
     "difficulty": "Easy"
+  },
+  {
+    "slug": "tetris",
+    "title": "Tetris",
+    "description": "Stack falling blocks, clear lines, and level up.",
+    "controls": "Arrows move, Z/X rotate, Space hard drop, C hold, P pause.",
+    "path": "games/tetris/index.html",
+    "tags": ["puzzle", "classic"],
+    "difficulty": "Medium"
+  },
+  {
+    "slug": "snake",
+    "title": "Snake",
+    "description": "Eat apples, grow longer, and avoid crashing.",
+    "controls": "Arrows/WASD, Space pause, R restart.",
+    "path": "games/snake/index.html",
+    "tags": ["classic", "arcade", "reflex"],
+    "difficulty": "Easy"
+  },
+  {
+    "slug": "space-invaders",
+    "title": "Space Invaders",
+    "description": "Defend Earth from descending invaders. Shoot, dodge, survive.",
+    "controls": "←/→ or A/D move · Space shoot · P pause · R restart",
+    "path": "games/space-invaders/index.html",
+    "tags": ["classic", "shooter", "arcade"],
+    "difficulty": "Medium"
+  },
+  {
+    "slug": "pacman",
+    "title": "Pac-Man",
+    "description": "Eat pellets, dodge ghosts, grab power pellets to turn the tables.",
+    "controls": "Arrows/WASD move · P pause · R restart",
+    "path": "games/pacman/index.html",
+    "tags": ["classic", "maze", "arcade"],
+    "difficulty": "Medium"
   }
 ]

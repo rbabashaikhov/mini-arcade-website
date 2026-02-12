@@ -38,6 +38,9 @@ body {
   border: 1px solid var(--border);
   box-shadow: 0 14px 30px rgba(15, 23, 42, 0.08);
   max-height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .game-header {
@@ -84,7 +87,6 @@ body {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 12px;
-  margin: 20px 0;
 }
 
 .scoreboard .label {
@@ -100,8 +102,24 @@ body {
   font-weight: 600;
 }
 
+.wrap-toggle {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+.wrap-toggle input {
+  accent-color: var(--accent);
+}
+
 canvas {
   width: 100%;
+  height: auto;
   border-radius: 16px;
   border: 1px solid var(--border);
   background: #0e1a1c;
@@ -110,5 +128,4 @@ canvas {
 
 .status {
   text-align: center;
-  margin-top: 16px;
 }

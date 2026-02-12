@@ -125,23 +125,18 @@ const openGame = () => {
 };
 
 const fullscreenGame = async () => {
-  if (!playArea) return;
+  if (!gameFrame) return;
+
   if (document.fullscreenElement) {
     await document.exitFullscreen();
     return;
   }
-  if (playArea.classList.contains("is-fullscreen")) {
-    playArea.classList.remove("is-fullscreen");
-    document.body.classList.remove("fullscreen-active");
-    document.documentElement.classList.remove("fullscreen-active");
-    return;
-  }
+
   try {
-    await playArea.requestFullscreen();
+    await gameFrame.requestFullscreen();
+    focusGameFrame();
   } catch (error) {
-    playArea.classList.add("is-fullscreen");
-    document.body.classList.add("fullscreen-active");
-    document.documentElement.classList.add("fullscreen-active");
+    console.error("Fullscreen failed:", error);
   }
 };
 
@@ -235,7 +230,11 @@ const init = () => {
   fullscreenBtn.addEventListener("click", fullscreenGame);
   searchInput.addEventListener("input", applySearch);
 
-  gameFrame.addEventListener("load", () => showLoader(false));
+  gameFrame.addEventListener("load", () => {
+    showLoader(false);
+    focusGameFrame();
+    gameFrame.contentWindow?.postMessage({ type: "arcade:focus" }, "*");
+  });
 
   document.addEventListener("fullscreenchange", () => {
     const isActive = Boolean(document.fullscreenElement);
