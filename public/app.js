@@ -9,12 +9,37 @@ const searchInput = document.getElementById("searchInput");
 const gamesCount = document.getElementById("gamesCount");
 const iframeLoader = document.getElementById("iframeLoader");
 const themeToggle = document.getElementById("themeToggle");
+const playArea = document.querySelector(".play-area");
 
 let games = [];
 let activeSlug = null;
 
 const STORAGE_LAST = "arcade_last_game";
 const STORAGE_THEME = "arcade_theme";
+const TETRIS_CODES = new Set([
+  "ArrowLeft",
+  "ArrowRight",
+  "ArrowDown",
+  "ArrowUp",
+  "Space",
+  "KeyZ",
+  "KeyX",
+  "KeyP",
+  "KeyR",
+  "KeyC",
+]);
+const TETRIS_KEYS = new Set([
+  "ArrowLeft",
+  "ArrowRight",
+  "ArrowDown",
+  "ArrowUp",
+  " ",
+  "z",
+  "x",
+  "p",
+  "r",
+  "c",
+]);
 
 const setTheme = (mode) => {
   document.body.dataset.theme = mode;
@@ -99,13 +124,66 @@ const openGame = () => {
   window.open(game.path, "_blank", "noopener");
 };
 
-const fullscreenGame = () => {
-  const container = document.querySelector(".play-area");
-  if (!document.fullscreenElement && container.requestFullscreen) {
-    container.requestFullscreen();
-  } else if (document.fullscreenElement && document.exitFullscreen) {
-    document.exitFullscreen();
+const fullscreenGame = async () => {
+  if (!playArea) return;
+  if (document.fullscreenElement) {
+    await document.exitFullscreen();
+    return;
   }
+  if (playArea.classList.contains("is-fullscreen")) {
+    playArea.classList.remove("is-fullscreen");
+    document.body.classList.remove("fullscreen-active");
+    document.documentElement.classList.remove("fullscreen-active");
+    return;
+  }
+  try {
+    await playArea.requestFullscreen();
+  } catch (error) {
+    playArea.classList.add("is-fullscreen");
+    document.body.classList.add("fullscreen-active");
+    document.documentElement.classList.add("fullscreen-active");
+  }
+};
+
+const isEditableTarget = (event) => {
+  const active = event.target;
+  const tag = active ? active.tagName : "";
+  return (
+    tag === "INPUT" ||
+    tag === "TEXTAREA" ||
+    (active && active.isContentEditable)
+  );
+};
+
+const shouldForwardKey = (event) => {
+  const code = event.code;
+  const key = event.key ? event.key.toLowerCase() : "";
+  return TETRIS_CODES.has(code) || TETRIS_KEYS.has(event.key) || TETRIS_KEYS.has(key);
+};
+
+const focusGameFrame = () => {
+  if (!gameFrame || !gameFrame.src) return;
+  try {
+    gameFrame.focus();
+  } catch (error) {
+    // no-op
+  }
+};
+
+const forwardKeyEvent = (event, isDown) => {
+  if (!gameFrame || !gameFrame.src) return;
+  if (isEditableTarget(event)) return;
+  if (!shouldForwardKey(event)) return;
+  event.preventDefault();
+  gameFrame.contentWindow?.postMessage(
+    {
+      type: "arcade:key",
+      down: isDown,
+      key: event.key,
+      code: event.code,
+    },
+    "*"
+  );
 };
 
 const applySearch = () => {
@@ -158,6 +236,34 @@ const init = () => {
   searchInput.addEventListener("input", applySearch);
 
   gameFrame.addEventListener("load", () => showLoader(false));
+
+  document.addEventListener("fullscreenchange", () => {
+    const isActive = Boolean(document.fullscreenElement);
+    playArea.classList.toggle("is-fullscreen", isActive);
+    document.body.classList.toggle("fullscreen-active", isActive);
+    document.documentElement.classList.toggle("fullscreen-active", isActive);
+    focusGameFrame();
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      if (document.fullscreenElement) {
+        document.exitFullscreen();
+      } else if (playArea.classList.contains("is-fullscreen")) {
+        playArea.classList.remove("is-fullscreen");
+        document.body.classList.remove("fullscreen-active");
+        document.documentElement.classList.remove("fullscreen-active");
+      }
+      return;
+    }
+    forwardKeyEvent(event, true);
+  });
+
+  document.addEventListener("keyup", (event) => {
+    forwardKeyEvent(event, false);
+  });
+
+  playArea?.addEventListener("pointerdown", focusGameFrame);
 
   loadGames();
 };

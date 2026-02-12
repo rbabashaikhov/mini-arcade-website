@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tetris</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <main class="game-shell" id="gameShell" tabindex="0">
+      <header class="game-header">
+        <div>
+          <p class="eyebrow">Mini Arcade</p>
+          <h1>Tetris</h1>
+          <p class="muted tagline">Stack clean lines and climb the levels.</p>
+        </div>
+        <button id="restartBtn" type="button">Restart</button>
+      </header>
+
+      <section class="scoreboard" aria-live="polite">
+        <div>
+          <span class="label">Score</span>
+          <span id="scoreValue" class="value">0</span>
+        </div>
+        <div>
+          <span class="label">Level</span>
+          <span id="levelValue" class="value">1</span>
+        </div>
+        <div>
+          <span class="label">Lines</span>
+          <span id="linesValue" class="value">0</span>
+        </div>
+        <div class="stat-best">
+          <span class="label">Best</span>
+          <span id="bestValue" class="value">0</span>
+        </div>
+      </section>
+
+      <section class="layout">
+        <canvas
+          id="tetrisCanvas"
+          width="300"
+          height="600"
+          tabindex="0"
+          aria-label="Tetris board"
+        ></canvas>
+
+        <aside class="side-panel">
+          <div class="panel-block">
+            <h2>Next</h2>
+            <div class="next-preview">
+              <canvas class="nextCanvas" width="120" height="120"></canvas>
+            </div>
+          </div>
+        </aside>
+      </section>
+
+      <p id="statusText" class="status muted">
+        Arrows move. Z/X rotate. Space hard drop. P pause. R restart.
+      </p>
+    </main>
+
+    <script src="./game.js"></script>
+  </body>
+</html>
