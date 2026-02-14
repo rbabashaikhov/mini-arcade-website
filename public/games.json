@@ -61,5 +61,14 @@
     "path": "games/flappy-bird/index.html",
     "tags": ["classic", "arcade", "reflex"],
     "difficulty": "Easy"
+  },
+  {
+    "slug": "asteroids",
+    "title": "Asteroids",
+    "description": "Rotate, thrust, shoot. Classic space survival.",
+    "controls": "←/→ rotate · W/↑ thrust · Space shoot · P pause · R restart",
+    "path": "games/asteroids/index.html",
+    "tags": ["classic", "arcade", "space"],
+    "difficulty": "Medium"
   }
 ]
