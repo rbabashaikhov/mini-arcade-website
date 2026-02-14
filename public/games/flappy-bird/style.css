@@ -1,0 +1,68 @@
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  background: #061b1f;
+  overflow: hidden;
+  font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  color: #e7fffb;
+}
+
+#game-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  outline: none;
+  background: radial-gradient(circle at top, rgba(6, 160, 165, 0.25), transparent 60%),
+    linear-gradient(180deg, #062328 0%, #041316 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#game-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  background: transparent;
+}
+
+#ui-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 10px;
+  pointer-events: none;
+  color: #b7f9f3;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+#ui-overlay .title {
+  font-size: clamp(20px, 4vw, 32px);
+  font-weight: 700;
+  color: #d9fffb;
+}
+
+#ui-overlay .hint {
+  font-size: clamp(12px, 2.3vw, 16px);
+  opacity: 0.9;
+}
+
+#ui-overlay .subhint {
+  font-size: clamp(10px, 2vw, 12px);
+  opacity: 0.65;
+}
+
+.hidden {
+  display: none;
+}

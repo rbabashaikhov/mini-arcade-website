@@ -52,5 +52,14 @@
     "path": "games/pacman/index.html",
     "tags": ["classic", "maze", "arcade"],
     "difficulty": "Medium"
+  },
+  {
+    "slug": "flappy-bird",
+    "title": "Flappy Bird",
+    "description": "Tap to fly through pipes. Simple, brutal, addictive.",
+    "controls": "Space/Click jump · P pause · R restart",
+    "path": "games/flappy-bird/index.html",
+    "tags": ["classic", "arcade", "reflex"],
+    "difficulty": "Easy"
   }
 ]
