@@ -10,12 +10,18 @@ const gamesCount = document.getElementById("gamesCount");
 const iframeLoader = document.getElementById("iframeLoader");
 const themeToggle = document.getElementById("themeToggle");
 const playArea = document.querySelector(".play-area");
+const stageWrapper = document.querySelector(".stage-wrapper");
+const stagePanelHint = document.getElementById("stagePanelHint");
+const sidebarToggle = document.getElementById("sidebarToggle");
+const mobileMenuBtn = document.getElementById("mobileMenuBtn");
+const sidebarOverlay = document.getElementById("sidebarOverlay");
 
 let games = [];
 let activeSlug = null;
 
 const STORAGE_LAST = "arcade_last_game";
 const STORAGE_THEME = "arcade_theme";
+const STORAGE_SIDEBAR = "sidebarCollapsed";
 const TETRIS_CODES = new Set([
   "ArrowLeft",
   "ArrowRight",
@@ -59,25 +65,42 @@ const clearCards = () => {
   cardsGrid.innerHTML = "";
 };
 
+const GAME_ICONS = {
+  "whack-a-mole": "🔨",
+  pong: "🏓",
+  tetris: "🧱",
+  snake: "🐍",
+  "space-invaders": "👾",
+  pacman: "🟡",
+  "flappy-bird": "🐦",
+  asteroids: "☄️",
+};
+
+const GAME_LAYOUT = {
+  "whack-a-mole": "compact",
+};
+
 const createCard = (game) => {
-  const card = document.createElement("div");
-  card.className = "card";
-  card.dataset.slug = game.slug;
+  const item = document.createElement("div");
+  item.className = "nav-item";
+  item.dataset.slug = game.slug;
 
   const button = document.createElement("button");
   button.type = "button";
+  button.dataset.title = game.title;
+  button.setAttribute("aria-label", `Play ${game.title}`);
   button.innerHTML = `
-    <h3>${game.title}</h3>
-    <p class="muted">${game.description}</p>
-    <div class="card-tags">
-      <span class="tag">${game.difficulty}</span>
-      ${game.tags.map((tag) => `<span class="tag">${tag}</span>`).join("")}
-    </div>
+    <span class="game-icon" aria-hidden="true">${
+      GAME_ICONS[game.slug] || "🎮"
+    }</span>
+    <span class="game-label">
+      <span class="game-title">${game.title}</span>
+    </span>
   `;
 
   button.addEventListener("click", () => selectGame(game.slug));
-  card.appendChild(button);
-  return card;
+  item.appendChild(button);
+  return item;
 };
 
 const renderCards = (list) => {
@@ -92,10 +115,11 @@ const renderCards = (list) => {
     cardsGrid.appendChild(empty);
   }
   updateSelectedCard();
+  updateNavTooltips();
 };
 
 const updateSelectedCard = () => {
-  document.querySelectorAll(".card").forEach((card) => {
+  document.querySelectorAll(".nav-item").forEach((card) => {
     card.classList.toggle("selected", card.dataset.slug === activeSlug);
   });
 };
@@ -109,7 +133,12 @@ const selectGame = (slug) => {
   controlsHint.textContent = game.controls;
   showLoader(true);
   gameFrame.src = game.path;
+  const layout = GAME_LAYOUT[slug] ?? "wide";
+  playArea.dataset.layout = layout;
+  stageWrapper.classList.toggle("stage-wrapper--compact", layout === "compact");
+  stagePanelHint.textContent = game.controls;
   updateSelectedCard();
+  closeMobileMenu();
 };
 
 const restartGame = () => {
@@ -181,6 +210,43 @@ const forwardKeyEvent = (event, isDown) => {
   );
 };
 
+/*
+ * For compact-layout games, scale the game-shell inside the iframe so the
+ * entire game fits the available height without clipping or scrollbars.
+ *
+ * CSS `zoom` is used instead of `transform: scale` because zoom affects both
+ * layout dimensions AND visual rendering, so the browser clips at the correct
+ * boundary. `transform` only changes visual appearance — layout stays at the
+ * original size and overflow:hidden would still cut off the bottom.
+ *
+ * The injected <style> lives inside the iframe document and is naturally
+ * discarded when a different game loads (iframe navigates to a new document).
+ */
+const fitCompactStage = () => {
+  if (GAME_LAYOUT[activeSlug] !== "compact") return;
+
+  const doc = gameFrame.contentDocument;
+  if (!doc?.head || !doc?.body) return;
+
+  // Remove any scale style from a previous resize / re-load
+  doc.getElementById("arcade-fit")?.remove();
+
+  const shell = doc.querySelector(".game-shell");
+  if (!shell) return;
+
+  const available = gameFrame.clientHeight;
+  const contentH = shell.scrollHeight;
+
+  if (contentH <= available) return; // already fits, nothing to do
+
+  const scale = available / contentH;
+
+  const style = doc.createElement("style");
+  style.id = "arcade-fit";
+  style.textContent = `.game-shell { zoom: ${scale.toFixed(4)}; }`;
+  doc.head.appendChild(style);
+};
+
 const applySearch = () => {
   const query = searchInput.value.trim().toLowerCase();
   const filtered = games.filter((game) => {
@@ -198,12 +264,51 @@ const applySearch = () => {
   renderCards(filtered);
 };
 
+const updateNavTooltips = () => {
+  const isCollapsed = document.body.classList.contains("sidebar-collapsed");
+  document.querySelectorAll(".nav-item button").forEach((button) => {
+    const title = button.dataset.title || "";
+    if (isCollapsed && title) {
+      button.setAttribute("title", title);
+    } else {
+      button.removeAttribute("title");
+    }
+  });
+};
+
+const setSidebarCollapsed = (collapsed) => {
+  document.body.classList.toggle("sidebar-collapsed", collapsed);
+  localStorage.setItem(STORAGE_SIDEBAR, collapsed ? "true" : "false");
+  const label = collapsed ? "Expand sidebar" : "Collapse sidebar";
+  sidebarToggle?.setAttribute("aria-label", label);
+  updateNavTooltips();
+};
+
+const openMobileMenu = () => {
+  document.body.classList.add("sidebar-open");
+  mobileMenuBtn?.setAttribute("aria-label", "Close game menu");
+};
+
+const closeMobileMenu = () => {
+  document.body.classList.remove("sidebar-open");
+  mobileMenuBtn?.setAttribute("aria-label", "Open game menu");
+};
+
+const toggleMobileMenu = () => {
+  if (document.body.classList.contains("sidebar-open")) {
+    closeMobileMenu();
+  } else {
+    openMobileMenu();
+  }
+};
+
 const loadGames = async () => {
   try {
     const response = await fetch("./games.json");
     games = await response.json();
     gamesCount.textContent = `${games.length} games`;
     renderCards(games);
+    updateNavTooltips();
     const stored = localStorage.getItem(STORAGE_LAST);
     if (stored && games.some((game) => game.slug === stored)) {
       selectGame(stored);
@@ -223,17 +328,27 @@ const loadGames = async () => {
 const init = () => {
   const savedTheme = localStorage.getItem(STORAGE_THEME) || "light";
   setTheme(savedTheme);
+  const savedSidebar = localStorage.getItem(STORAGE_SIDEBAR) === "true";
+  setSidebarCollapsed(savedSidebar);
 
   themeToggle.addEventListener("click", toggleTheme);
   restartBtn.addEventListener("click", restartGame);
   openBtn.addEventListener("click", openGame);
   fullscreenBtn.addEventListener("click", fullscreenGame);
   searchInput.addEventListener("input", applySearch);
+  sidebarToggle?.addEventListener("click", () => {
+    const isCollapsed = document.body.classList.contains("sidebar-collapsed");
+    setSidebarCollapsed(!isCollapsed);
+  });
+  mobileMenuBtn?.addEventListener("click", toggleMobileMenu);
+  sidebarOverlay?.addEventListener("click", closeMobileMenu);
 
   gameFrame.addEventListener("load", () => {
     showLoader(false);
     focusGameFrame();
     gameFrame.contentWindow?.postMessage({ type: "arcade:focus" }, "*");
+    // Defer one frame so the iframe layout is fully committed before measuring
+    requestAnimationFrame(fitCompactStage);
   });
 
   document.addEventListener("fullscreenchange", () => {
@@ -263,6 +378,12 @@ const init = () => {
   });
 
   playArea?.addEventListener("pointerdown", focusGameFrame);
+  window.addEventListener("resize", () => {
+    if (window.innerWidth >= 768) {
+      closeMobileMenu();
+    }
+    fitCompactStage();
+  });
 
   loadGames();
 };

@@ -37,22 +37,24 @@
       </section>
 
       <section class="layout">
-        <canvas
-          id="tetrisCanvas"
-          width="300"
-          height="600"
-          tabindex="0"
-          aria-label="Tetris board"
-        ></canvas>
+        <div class="tetris-stage">
+          <canvas
+            id="tetrisCanvas"
+            width="300"
+            height="600"
+            tabindex="0"
+            aria-label="Tetris board"
+          ></canvas>
 
-        <aside class="side-panel">
-          <div class="panel-block">
-            <h2>Next</h2>
-            <div class="next-preview">
-              <canvas class="nextCanvas" width="120" height="120"></canvas>
+          <aside class="side-panel">
+            <div class="panel-block">
+              <h2>Next</h2>
+              <div class="next-preview">
+                <canvas class="nextCanvas" width="120" height="120"></canvas>
+              </div>
             </div>
-          </div>
-        </aside>
+          </aside>
+        </div>
       </section>
 
       <p id="statusText" class="status muted">
