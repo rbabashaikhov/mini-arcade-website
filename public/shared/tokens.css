@@ -1,0 +1,15 @@
+:root {
+  color-scheme: dark;
+  --bg: #101114; --surface: #191b20; --surface-raised: #22252b;
+  --text: #f4f1e9; --muted: #a4a5ad; --border: #30333a; --accent: #d2f86a;
+  --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px; --space-6: 24px; --space-8: 32px;
+  --radius-sm: 8px; --radius: 16px; --radius-lg: 24px;
+  --shadow: 0 16px 48px #0003; --transition: 180ms ease;
+  --font-ui: 'Segoe UI', Arial, sans-serif; --font-display: 'Arial Black', 'Segoe UI', sans-serif;
+}
+* { box-sizing: border-box; }
+button, input, a { -webkit-tap-highlight-color: transparent; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 4px; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+}

@@ -1,0 +1,7 @@
+{
+  "name": "arcade-lab",
+  "version": "2.0.0",
+  "private": true,
+  "scripts": {"start": "node tools/serve.cjs", "test": "node tests/smoke.cjs"},
+  "devDependencies": {"playwright": "^1.58.2"}
+}
