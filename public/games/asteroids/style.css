@@ -1,170 +1,235 @@
 :root {
-  --bg: #f4fbfb;
-  --surface: #ffffff;
-  --accent: #23b4b0;
-  --accent-strong: #0f8c8f;
-  --text: #0f172a;
-  --muted: #5e6a78;
-  --border: #d7e4ea;
-  --canvas-bg: #061416;
+  color-scheme: dark;
+  --accent: #76e6ca;
+  --bg: #101114;
+  --surface: #191b20;
+  --text: #f4f1e9;
+  --muted: #a4a5ad;
 }
-
-*,
-*::before,
-*::after {
+* {
   box-sizing: border-box;
 }
-
-html,
-body {
-  height: 100%;
-  overflow-x: hidden;
-  overflow-y: auto;
-}
-
 body {
   margin: 0;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   background: var(--bg);
   color: var(--text);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: clamp(12px, 3vw, 20px);
-  font-size: clamp(14px, 1.6vw, 16px);
+  font:
+    14px system-ui,
+    sans-serif;
 }
-
-.game-shell {
-  width: 100%;
-  max-width: 100%;
-  background: var(--surface);
-  border-radius: 20px;
-  padding: clamp(16px, 3.5vw, 24px);
-  border: 1px solid var(--border);
-  box-shadow: 0 14px 30px rgba(15, 23, 42, 0.08);
-  max-height: 100%;
+main {
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  align-items: center;
+  padding: 16px;
+  gap: 12px;
 }
-
-.game-header {
+header,
+.hud,
+.touch,
+.hint {
+  width: min(100%, 960px);
+}
+header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 8px;
+}
+h1 {
+  font-size: 20px;
+  letter-spacing: -0.6px;
+  margin: 0;
+}
+header small {
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--accent);
+}
+.actions {
+  display: flex;
+  gap: 6px;
+}
+button {
+  font: inherit;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid #34363e;
+  border-radius: 8px;
+  min-height: 44px;
+  padding: 8px 14px;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+button:hover {
+  border-color: var(--accent);
+}
+button:focus-visible,
+#gameWrapper:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.hud {
+  display: flex;
+  justify-content: space-between;
+  border-top: 1px solid #303239;
+  padding-top: 10px;
+}
+.hud span {
+  display: block;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.hud strong {
+  font:
+    600 22px ui-monospace,
+    monospace;
+}
+.hud div:first-child strong {
+  color: var(--accent);
+}
+.arena {
+  position: relative;
+  border: 1px solid #303b40;
+  border-radius: 12px;
+  overflow: hidden;
+  flex: none;
+  max-width: 100%;
+  background: #090e14;
+}
+canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+}
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  text-align: center;
+  background: #090e14db;
+  padding: 20px;
   gap: 12px;
-  flex-wrap: wrap;
 }
-
-.game-header h1 {
-  margin: 4px 0;
+.overlay[hidden] {
+  display: none;
 }
-
-.header-actions {
+.overlay small {
+  color: var(--accent);
+  letter-spacing: 3px;
+  font-size: 10px;
+}
+.overlay h2 {
+  font-size: clamp(24px, 6vw, 42px);
+  letter-spacing: -1px;
+  margin: 0;
+}
+.overlay p {
+  color: #bac0cc;
+  max-width: 340px;
+  line-height: 1.6;
+  margin: 0;
+}
+.overlay button {
+  background: var(--accent);
+  color: #0c1518;
+  border: 0;
+  font-weight: 700;
+  min-width: 140px;
+}
+.touch {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+.touch > div {
   display: flex;
   gap: 8px;
 }
-
-.eyebrow {
-  margin: 0;
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--muted);
+.touch button {
+  min-width: 62px;
+  min-height: 52px;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
 }
-
-.muted {
-  color: var(--muted);
-  margin: 0;
+.touch button.active {
+  background: var(--accent);
+  color: #101114;
 }
-
-button {
-  padding: 10px 16px;
-  border-radius: 999px;
-  border: 1px solid var(--border);
-  background: var(--surface);
-  cursor: pointer;
-  min-height: 44px;
-  transition: transform 0.2s ease, border 0.2s ease, color 0.2s ease;
-}
-
-button:hover,
-button:focus {
-  transform: translateY(-1px);
+.touch .fire {
+  min-width: 100px;
   border-color: var(--accent);
-  color: var(--accent-strong);
-  outline: none;
 }
-
-.hud {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 12px;
-}
-
-.hud .label {
-  display: block;
-  font-size: 12px;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-
-.hud .value {
-  font-size: 18px;
-  font-weight: 600;
-}
-
-.controls-hint .value {
-  font-size: 14px;
-  font-weight: 500;
-}
-
-.canvas-shell {
-  width: 100%;
-}
-
-.game-wrapper {
-  border-radius: 16px;
-  border: 1px solid var(--border);
-  background: var(--canvas-bg);
-  padding: 8px;
-  outline: none;
-}
-
-.game-wrapper:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(35, 180, 176, 0.2);
-}
-
-canvas {
-  width: 100%;
-  height: auto;
-  aspect-ratio: 18 / 13;
-  max-height: min(60vh, 520px);
-  border-radius: 12px;
-  display: block;
-  background: var(--canvas-bg);
-}
-
-.status {
+.hint {
+  margin: 0;
   text-align: center;
-  font-size: 14px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.5;
 }
-
-@media (max-width: 360px) {
-  .header-actions {
-    flex-direction: column;
-    align-items: stretch;
+@media (max-width: 420px) {
+  main {
+    padding: 10px;
+    gap: 9px;
   }
-
-  button {
-    width: 100%;
+  h1 {
+    font-size: 17px;
+  }
+  header button {
+    padding: 8px 10px;
+  }
+  .touch button {
+    min-width: 50px;
+  }
+  .touch .fire {
+    min-width: 74px;
   }
 }
-
-@media (min-width: 640px) {
-  .game-header {
-    flex-wrap: nowrap;
+@media (max-height: 480px) {
+  main {
+    padding: 7px;
+    gap: 5px;
+  }
+  header small,
+  .hint {
+    display: none;
+  }
+  h1 {
+    font-size: 16px;
+  }
+  .hud {
+    padding-top: 4px;
+  }
+  .hud strong {
+    font-size: 16px;
+  }
+  .touch button {
+    min-height: 44px;
+  }
+  .overlay {
+    gap: 6px;
+  }
+  .overlay p {
+    font-size: 12px;
+  }
+  .overlay h2 {
+    font-size: 24px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  * {
+    scroll-behavior: auto !important;
   }
 }

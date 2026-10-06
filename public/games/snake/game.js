@@ -1,336 +1,160 @@
-const canvas = document.getElementById("snakeCanvas");
-const ctx = canvas.getContext("2d");
-
-const gameShell = document.getElementById("gameShell");
-const scoreValue = document.getElementById("scoreValue");
-const bestValue = document.getElementById("bestValue");
-const speedValue = document.getElementById("speedValue");
-const statusText = document.getElementById("statusText");
-const restartBtn = document.getElementById("restartBtn");
-const wrapToggle = document.getElementById("wrapToggle");
-
-const COLS = 30;
-const ROWS = 20;
-const CELL_SIZE = 20;
-
-const BASE_INTERVAL = 170;
-const MIN_INTERVAL = 70;
-const SPEED_STEP = 10;
-const FOODS_PER_LEVEL = 5;
-const STORAGE_KEY = "arcade_snake_best";
-const WRAP_KEY = "arcade_snake_wrap";
-
-canvas.width = COLS * CELL_SIZE;
-canvas.height = ROWS * CELL_SIZE;
-
-let snake = [];
-let direction = { x: 1, y: 0 };
-let nextDirection = { x: 1, y: 0 };
-let food = { x: 0, y: 0 };
-let score = 0;
-let bestScore = 0;
-let speedLevel = 1;
-let isPaused = false;
-let isGameOver = false;
-let timerId = null;
-let isWrapEnabled = false;
-
-const controlsHint = "Arrows/WASD to move. Space to pause. R to restart.";
-
-const directionMap = {
-  ArrowUp: { x: 0, y: -1 },
-  ArrowDown: { x: 0, y: 1 },
-  ArrowLeft: { x: -1, y: 0 },
-  ArrowRight: { x: 1, y: 0 },
-  KeyW: { x: 0, y: -1 },
-  KeyS: { x: 0, y: 1 },
-  KeyA: { x: -1, y: 0 },
-  KeyD: { x: 1, y: 0 },
-};
-
-const gameKeyCodes = new Set([
-  ...Object.keys(directionMap),
-  "Space",
-  "KeyP",
-  "KeyR",
-]);
-
-function loadBestScore() {
-  const stored = Number.parseInt(localStorage.getItem(STORAGE_KEY), 10);
-  bestScore = Number.isFinite(stored) ? stored : 0;
-  bestValue.textContent = bestScore;
-}
-
-function loadWrapSetting() {
-  isWrapEnabled = localStorage.getItem(WRAP_KEY) === "true";
-  if (wrapToggle) {
-    wrapToggle.checked = isWrapEnabled;
+import { setup, swipe } from "../../shared/puzzle-ui.js";
+import { get, set } from "../../shared/storage.js";
+export function advance(body, dir, food, wrap, cols = 24, rows = 18) {
+  let head = { x: body[0].x + dir.x, y: body[0].y + dir.y };
+  if (wrap) {
+    head.x = (head.x + cols) % cols;
+    head.y = (head.y + rows) % rows;
   }
-}
-
-function saveWrapSetting(value) {
-  localStorage.setItem(WRAP_KEY, value ? "true" : "false");
-}
-
-function saveBestScore() {
-  if (score > bestScore) {
-    bestScore = score;
-    bestValue.textContent = bestScore;
-    localStorage.setItem(STORAGE_KEY, String(bestScore));
-  }
-}
-
-function getSpeedLevel() {
-  return Math.floor(score / FOODS_PER_LEVEL) + 1;
-}
-
-function getTickInterval() {
-  return Math.max(MIN_INTERVAL, BASE_INTERVAL - (speedLevel - 1) * SPEED_STEP);
-}
-
-function resetSnake() {
-  const startX = Math.floor(COLS / 2);
-  const startY = Math.floor(ROWS / 2);
-  snake = [
-    { x: startX, y: startY },
-    { x: startX - 1, y: startY },
-    { x: startX - 2, y: startY },
-  ];
-  direction = { x: 1, y: 0 };
-  nextDirection = { x: 1, y: 0 };
-}
-
-function randomEmptyCell() {
-  const emptyCells = [];
-  const occupied = new Set(snake.map((segment) => `${segment.x},${segment.y}`));
-
-  for (let y = 0; y < ROWS; y += 1) {
-    for (let x = 0; x < COLS; x += 1) {
-      const key = `${x},${y}`;
-      if (!occupied.has(key)) {
-        emptyCells.push({ x, y });
-      }
-    }
-  }
-
-  if (emptyCells.length === 0) {
+  const grows = head.x === food?.x && head.y === food?.y;
+  if (
+    head.x < 0 ||
+    head.x >= cols ||
+    head.y < 0 ||
+    head.y >= rows ||
+    body
+      .slice(0, grows ? body.length : -1)
+      .some((p) => p.x === head.x && p.y === head.y)
+  )
     return null;
+  return [head, ...(grows ? body : body.slice(0, -1))];
+}
+const dirs = {
+  up: { x: 0, y: -1 },
+  down: { x: 0, y: 1 },
+  left: { x: -1, y: 0 },
+  right: { x: 1, y: 0 },
+};
+let snake,
+  dir,
+  queue,
+  food,
+  score,
+  clock = 0;
+const toggle = document.querySelector("#wrapToggle");
+toggle.checked = get("snake:wrap", false) === true;
+toggle.onchange = () => set("snake:wrap", toggle.checked);
+function place() {
+  const cells = [];
+  for (let y = 0; y < 18; y++)
+    for (let x = 0; x < 24; x++)
+      if (!snake.some((p) => p.x === x && p.y === y)) cells.push({ x, y });
+  food = cells[Math.floor(Math.random() * cells.length)];
+}
+function reset() {
+  snake = [
+    { x: 9, y: 9 },
+    { x: 8, y: 9 },
+    { x: 7, y: 9 },
+  ];
+  dir = dirs.right;
+  queue = [];
+  score = 0;
+  clock = 0;
+  place();
+  ui.hud(score, "SPEED 01");
+}
+function input(name) {
+  if (ui.state !== "playing") return;
+  const next = dirs[name],
+    prev = queue.at(-1) || dir;
+  if (
+    next &&
+    queue.length < 2 &&
+    !(next.x === -prev.x && next.y === -prev.y) &&
+    !(next.x === prev.x && next.y === prev.y)
+  )
+    queue.push(next);
+}
+function update(dt) {
+  clock += dt;
+  const speed = Math.max(0.075, 0.17 - Math.floor(score / 5) * 0.01);
+  if (clock < speed) return;
+  clock -= speed;
+  dir = queue.shift() || dir;
+  const next = advance(snake, dir, food, toggle.checked);
+  if (!next) {
+    ui.setState("over", "End of the line");
+    return;
   }
-
-  return emptyCells[Math.floor(Math.random() * emptyCells.length)];
-}
-
-function placeFood() {
-  const cell = randomEmptyCell();
-  if (cell) {
-    food = cell;
+  const ate = next.length > snake.length;
+  snake = next;
+  if (ate) {
+    score++;
+    place();
+    ui.hud(
+      score,
+      `SPEED ${String(Math.floor(score / 5) + 1).padStart(2, "0")}`,
+    );
+    if (!food) ui.setState("over", "Grid complete!");
   }
 }
-
-function updateHud() {
-  scoreValue.textContent = score;
-  speedValue.textContent = speedLevel;
-}
-
-function drawCell(x, y, color) {
-  ctx.fillStyle = color;
-  ctx.fillRect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
-}
-
-function drawGrid() {
-  ctx.fillStyle = "#0e1a1c";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  ctx.strokeStyle = "rgba(26, 166, 166, 0.18)";
-  ctx.lineWidth = 1;
-
-  for (let x = 0; x <= COLS; x += 1) {
-    ctx.beginPath();
-    ctx.moveTo(x * CELL_SIZE, 0);
-    ctx.lineTo(x * CELL_SIZE, canvas.height);
-    ctx.stroke();
+function draw(c) {
+  c.fillStyle = "#101713";
+  c.fillRect(0, 0, 480, 360);
+  c.strokeStyle = "#203027";
+  c.lineWidth = 0.5;
+  for (let x = 0; x <= 480; x += 20) {
+    c.beginPath();
+    c.moveTo(x, 0);
+    c.lineTo(x, 360);
+    c.stroke();
   }
-
-  for (let y = 0; y <= ROWS; y += 1) {
-    ctx.beginPath();
-    ctx.moveTo(0, y * CELL_SIZE);
-    ctx.lineTo(canvas.width, y * CELL_SIZE);
-    ctx.stroke();
+  for (let y = 0; y <= 360; y += 20) {
+    c.beginPath();
+    c.moveTo(0, y);
+    c.lineTo(480, y);
+    c.stroke();
   }
-}
-
-function drawSnake() {
-  snake.forEach((segment, index) => {
-    const color = index === 0 ? "#49d1d1" : "#24b8b8";
-    drawCell(segment.x, segment.y, color);
+  if (food) {
+    c.fillStyle = "#ff977b";
+    c.beginPath();
+    c.arc(food.x * 20 + 10, food.y * 20 + 10, 6, 0, 7);
+    c.fill();
+    c.fillStyle = "#d2f86a";
+    c.fillRect(food.x * 20 + 11, food.y * 20 + 1, 4, 3);
+  }
+  snake?.forEach((p, i) => {
+    c.fillStyle = i === 0 ? "#dcff91" : "#80b963";
+    c.beginPath();
+    c.roundRect(p.x * 20 + 1, p.y * 20 + 1, 18, 18, i === 0 ? 6 : 4);
+    c.fill();
+    if (i === 0) {
+      c.fillStyle = "#182218";
+      const ox = dir.y ? 5 : dir.x > 0 ? 13 : 5,
+        oy = dir.x ? 5 : dir.y > 0 ? 13 : 5;
+      c.fillRect(p.x * 20 + ox, p.y * 20 + oy, 3, 3);
+      c.fillRect(
+        p.x * 20 + (dir.y ? 13 : ox),
+        p.y * 20 + (dir.x ? 13 : oy),
+        3,
+        3,
+      );
+    }
   });
 }
-
-function drawFood() {
-  drawCell(food.x, food.y, "#ff6b6b");
-}
-
-function drawScene() {
-  drawGrid();
-  drawFood();
-  drawSnake();
-}
-
-function isOppositeDirection(next, current) {
-  return next.x === -current.x && next.y === -current.y;
-}
-
-function setDirection(next) {
-  if (!isOppositeDirection(next, direction)) {
-    nextDirection = next;
-  }
-}
-
-function handleCollision(nextHead) {
-  return snake.some(
-    (segment) => segment.x === nextHead.x && segment.y === nextHead.y
-  );
-}
-
-function isOutOfBounds(nextHead) {
-  return (
-    nextHead.x < 0 ||
-    nextHead.x >= COLS ||
-    nextHead.y < 0 ||
-    nextHead.y >= ROWS
-  );
-}
-
-function applyWrap(nextHead) {
-  let { x, y } = nextHead;
-  if (x < 0) x = COLS - 1;
-  if (x >= COLS) x = 0;
-  if (y < 0) y = ROWS - 1;
-  if (y >= ROWS) y = 0;
-  return { x, y };
-}
-
-function endGame() {
-  isGameOver = true;
-  saveBestScore();
-  statusText.textContent = "Game over. Press R to restart.";
-}
-
-function tick() {
-  if (isPaused || isGameOver) {
-    return;
-  }
-
-  direction = { ...nextDirection };
-  const head = snake[0];
-  let nextHead = { x: head.x + direction.x, y: head.y + direction.y };
-
-  if (isWrapEnabled) {
-    nextHead = applyWrap(nextHead);
-  } else if (isOutOfBounds(nextHead)) {
-    endGame();
-    return;
-  }
-
-  if (handleCollision(nextHead)) {
-    endGame();
-    return;
-  }
-
-  snake.unshift(nextHead);
-
-  if (nextHead.x === food.x && nextHead.y === food.y) {
-    score += 1;
-    speedLevel = getSpeedLevel();
-    placeFood();
-  } else {
-    snake.pop();
-  }
-
-  updateHud();
-  drawScene();
-  scheduleNextTick();
-}
-
-function scheduleNextTick() {
-  clearTimeout(timerId);
-  timerId = setTimeout(tick, getTickInterval());
-}
-
-function togglePause() {
-  if (isGameOver) {
-    return;
-  }
-
-  isPaused = !isPaused;
-  if (isPaused) {
-    statusText.textContent = "Paused. Press Space to resume.";
-    clearTimeout(timerId);
-  } else {
-    statusText.textContent = controlsHint;
-    scheduleNextTick();
-  }
-}
-
-function restartGame() {
-  clearTimeout(timerId);
-  score = 0;
-  speedLevel = 1;
-  isPaused = false;
-  isGameOver = false;
-  statusText.textContent = controlsHint;
-  resetSnake();
-  placeFood();
-  updateHud();
-  drawScene();
-  scheduleNextTick();
-}
-
-function handleKeyDown(event) {
-  const code = event.code;
-  const mappedDirection = directionMap[code];
-
-  if (gameKeyCodes.has(code)) {
-    event.preventDefault();
-  }
-
-  if (mappedDirection) {
-    setDirection(mappedDirection);
-    return;
-  }
-
-  if (code === "Space" || code === "KeyP") {
-    togglePause();
-  }
-
-  if (code === "KeyR") {
-    restartGame();
-  }
-}
-
-restartBtn.addEventListener("click", restartGame);
-window.addEventListener("keydown", handleKeyDown);
-
-wrapToggle?.addEventListener("change", (event) => {
-  isWrapEnabled = event.target.checked;
-  saveWrapSetting(isWrapEnabled);
-});
-
-const focusTarget = gameShell || canvas;
-const focusGame = () => {
-  if (focusTarget && typeof focusTarget.focus === "function") {
-    focusTarget.focus();
-  }
+const keys = {
+  ArrowUp: "up",
+  KeyW: "up",
+  ArrowDown: "down",
+  KeyS: "down",
+  ArrowLeft: "left",
+  KeyA: "left",
+  ArrowRight: "right",
+  KeyD: "right",
 };
-
-focusTarget?.addEventListener("click", focusGame);
-
-window.addEventListener("message", (event) => {
-  if (event.data && event.data.type === "arcade:focus") {
-    focusGame();
-  }
+const ui = setup("snake", "Stay hungry.", 480, 360, {
+  reset,
+  input,
+  update,
+  draw,
+  pauseKeys: ["Space"],
+  key(code) {
+    if (keys[code]) {
+      input(keys[code]);
+      return true;
+    }
+  },
 });
-
-loadBestScore();
-loadWrapSetting();
-restartGame();
+reset();
+swipe(ui.canvas, input);

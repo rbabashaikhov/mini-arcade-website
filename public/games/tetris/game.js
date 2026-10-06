@@ -1,46 +1,5 @@
-const canvas = document.getElementById("tetrisCanvas");
-const ctx = canvas.getContext("2d");
-const gameShell = document.getElementById("gameShell");
-const nextCanvases = Array.from(document.querySelectorAll(".nextCanvas"));
-const nextContexts = nextCanvases.map((node) => node.getContext("2d"));
-
-const scoreValue = document.getElementById("scoreValue");
-const levelValue = document.getElementById("levelValue");
-const linesValue = document.getElementById("linesValue");
-const bestValue = document.getElementById("bestValue");
-const statusText = document.getElementById("statusText");
-const restartBtn = document.getElementById("restartBtn");
-
-const COLS = 10;
-const ROWS = 20;
-const BEST_KEY = "arcade_tetris_best";
-const layout = document.querySelector(".layout");
-const sidePanel = document.querySelector(".side-panel");
-const scrollKeys = new Set([
-  "ArrowLeft",
-  "ArrowRight",
-  "ArrowDown",
-  "ArrowUp",
-  " ",
-]);
-
-let blockSize = 0;
-let canvasWidth = 0;
-let canvasHeight = 0;
-
-const COLORS = {
-  I: "#38bdf8",
-  J: "#2563eb",
-  L: "#f97316",
-  O: "#facc15",
-  S: "#22c55e",
-  T: "#a855f7",
-  Z: "#ef4444",
-  GHOST: "rgba(148, 163, 184, 0.35)",
-  EMPTY: "#0b1326",
-};
-
-const SHAPES = {
+import { setup } from "../../shared/puzzle-ui.js";
+export const SHAPES = {
   I: [
     [0, 0, 0, 0],
     [1, 1, 1, 1],
@@ -77,558 +36,224 @@ const SHAPES = {
     [0, 0, 0],
   ],
 };
-
-const KICK_TESTS = [0, 1, -1, 2, -2];
-
-let board = createBoard();
-let current = null;
-let nextQueue = [];
-let bag = [];
-let score = 0;
-let level = 1;
-let lines = 0;
-let bestScore = Number(localStorage.getItem(BEST_KEY)) || 0;
-
-const DAS_DELAY = 140;
-const ARR_INTERVAL = 35;
-const SOFT_DROP_INTERVAL = 45;
-const LOCK_DELAY = 450;
-
-let dropCounter = 0;
-let dropInterval = 800;
-let lastTime = 0;
-let isPaused = false;
-let isGameOver = false;
-let lockTimer = 0;
-let softDropActive = false;
-let moveLeftHeld = false;
-let moveRightHeld = false;
-let lastMoveDir = 0;
-let activeMoveDir = 0;
-let dasTimer = 0;
-let arrTimer = 0;
-
-function createBoard() {
-  return Array.from({ length: ROWS }, () => Array(COLS).fill(null));
+export const rotate = (m) =>
+  m[0].map((_, x) => m.map((row) => row[x]).reverse());
+export function collision(board, m, x, y) {
+  return m.some((row, j) =>
+    row.some(
+      (v, i) =>
+        v &&
+        (x + i < 0 ||
+          x + i >= 10 ||
+          y + j >= 20 ||
+          (y + j >= 0 && board[y + j][x + i])),
+    ),
+  );
 }
-
-function shuffle(array) {
-  for (let i = array.length - 1; i > 0; i -= 1) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
-  }
-  return array;
-}
-
-function refillBag() {
-  bag = shuffle(Object.keys(SHAPES).slice());
-}
-
-function pullFromBag() {
-  if (bag.length === 0) {
-    refillBag();
+const colors = {
+  I: "#79ddeb",
+  J: "#7a9cff",
+  L: "#ffb374",
+  O: "#f1d770",
+  S: "#a4dc86",
+  T: "#c29cf4",
+  Z: "#f38498",
+};
+let board,
+  current,
+  bag,
+  queue,
+  held,
+  canHold,
+  score,
+  lines,
+  clock,
+  lock,
+  resets;
+function pull() {
+  if (!bag.length) {
+    bag = Object.keys(SHAPES);
+    for (let i = bag.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [bag[i], bag[j]] = [bag[j], bag[i]];
+    }
   }
   return bag.pop();
 }
-
-function ensureQueue() {
-  while (nextQueue.length < 3) {
-    nextQueue.push(pullFromBag());
-  }
+function spawn(type) {
+  while (queue.length < 4) queue.push(pull());
+  type = type || queue.shift();
+  current = { type, m: SHAPES[type].map((r) => r.slice()), x: 3, y: -1 };
+  clock = 0;
+  lock = 0;
+  resets = 0;
+  if (collision(board, current.m, current.x, current.y))
+    ui.setState("over", "Stack complete");
 }
-
-function cloneMatrix(matrix) {
-  return matrix.map((row) => row.slice());
+function hud() {
+  ui.hud(score, `LEVEL ${Math.floor(lines / 10) + 1}\n${lines} LINES`);
 }
-
-function rotateMatrix(matrix, direction) {
-  const size = matrix.length;
-  const rotated = Array.from({ length: size }, () => Array(size).fill(0));
-  for (let y = 0; y < size; y += 1) {
-    for (let x = 0; x < size; x += 1) {
-      if (direction === 1) {
-        rotated[x][size - 1 - y] = matrix[y][x];
-      } else {
-        rotated[size - 1 - x][y] = matrix[y][x];
+function reset() {
+  board = Array.from({ length: 20 }, () => Array(10).fill(null));
+  bag = [];
+  queue = [];
+  held = null;
+  canHold = true;
+  score = 0;
+  lines = 0;
+  spawn();
+  hud();
+}
+function grounded() {
+  return collision(board, current.m, current.x, current.y + 1);
+}
+function settle() {
+  let top = false;
+  current.m.forEach((row, j) =>
+    row.forEach((v, i) => {
+      if (v) {
+        if (current.y + j < 0) top = true;
+        else board[current.y + j][current.x + i] = current.type;
       }
+    }),
+  );
+  if (top) {
+    ui.setState("over", "Stack complete");
+    return;
+  }
+  const kept = board.filter((r) => !r.every(Boolean)),
+    n = 20 - kept.length;
+  board = [...Array.from({ length: n }, () => Array(10).fill(null)), ...kept];
+  score += [0, 100, 300, 500, 800][n] * (Math.floor(lines / 10) + 1);
+  lines += n;
+  canHold = true;
+  spawn();
+  hud();
+}
+function ghost() {
+  let y = current.y;
+  while (!collision(board, current.m, current.x, y + 1)) y++;
+  return y;
+}
+function input(action) {
+  if (ui.state !== "playing") return;
+  if (action === "left" || action === "right") {
+    const x = current.x + (action === "left" ? -1 : 1);
+    if (!collision(board, current.m, x, current.y)) {
+      current.x = x;
+      if (grounded() && resets++ < 15) lock = 0;
     }
-  }
-  return rotated;
-}
-
-function spawnPiece() {
-  ensureQueue();
-  const type = nextQueue.shift();
-  const shape = cloneMatrix(SHAPES[type]);
-  current = {
-    type,
-    matrix: shape,
-    x: Math.floor((COLS - shape.length) / 2),
-    y: -1,
-  };
-  if (collides(current.matrix, current.x, current.y)) {
-    isGameOver = true;
-    statusText.textContent = "Game over. Press R to restart.";
-  }
-  lockTimer = 0;
-  dropCounter = 0;
-  ensureQueue();
-}
-
-function collides(matrix, offsetX, offsetY) {
-  for (let y = 0; y < matrix.length; y += 1) {
-    for (let x = 0; x < matrix[y].length; x += 1) {
-      if (!matrix[y][x]) continue;
-      const newX = offsetX + x;
-      const newY = offsetY + y;
-      if (newX < 0 || newX >= COLS || newY >= ROWS) {
-        return true;
+  } else if (action === "rotate" || action === "ccw") {
+    let m = rotate(current.m);
+    if (action === "ccw") m = rotate(rotate(m));
+    for (const [x, y] of [
+      [0, 0],
+      [-1, 0],
+      [1, 0],
+      [-2, 0],
+      [2, 0],
+      [0, -1],
+      [0, -2],
+    ])
+      if (!collision(board, m, current.x + x, current.y + y)) {
+        current.m = m;
+        current.x += x;
+        current.y += y;
+        if (resets++ < 15) lock = 0;
+        break;
       }
-      if (newY >= 0 && board[newY][newX]) {
-        return true;
-      }
+  } else if (action === "down") {
+    if (!grounded()) {
+      current.y++;
+      score++;
+      hud();
     }
-  }
-  return false;
-}
-
-function mergePiece() {
-  current.matrix.forEach((row, y) => {
-    row.forEach((value, x) => {
-      if (!value) return;
-      const boardY = current.y + y;
-      if (boardY < 0) {
-        isGameOver = true;
-        return;
-      }
-      board[boardY][current.x + x] = current.type;
-    });
-  });
-}
-
-function clearLines() {
-  let cleared = 0;
-  for (let y = ROWS - 1; y >= 0; y -= 1) {
-    if (board[y].every((cell) => cell !== null)) {
-      board.splice(y, 1);
-      board.unshift(Array(COLS).fill(null));
-      cleared += 1;
-      y += 1;
-    }
-  }
-  if (cleared > 0) {
-    const lineScores = [0, 100, 300, 500, 800];
-    score += lineScores[cleared] * level;
-    lines += cleared;
-    level = Math.floor(lines / 10) + 1;
-    dropInterval = Math.max(120, 800 - (level - 1) * 60);
-    updateScoreboard();
+    clock = 0;
+  } else if (action === "drop") {
+    const y = ghost();
+    score += (y - current.y) * 2;
+    current.y = y;
+    settle();
+  } else if (action === "hold" && canHold) {
+    const type = current.type;
+    spawn(held);
+    held = type;
+    canHold = false;
   }
 }
-
-function updateScoreboard() {
-  scoreValue.textContent = String(score);
-  levelValue.textContent = String(level);
-  linesValue.textContent = String(lines);
-  if (score > bestScore) {
-    bestScore = score;
-    localStorage.setItem(BEST_KEY, String(bestScore));
+function update(dt) {
+  clock += dt;
+  if (clock >= Math.max(0.08, 0.8 - Math.floor(lines / 10) * 0.06)) {
+    clock = 0;
+    if (!grounded()) current.y++;
   }
-  bestValue.textContent = String(bestScore);
+  if (grounded()) {
+    lock += dt;
+    if (lock >= 0.45) settle();
+  } else lock = 0;
 }
-
-function drawCell(context, x, y, color, size) {
-  context.fillStyle = color;
-  context.fillRect(x * size, y * size, size, size);
-  context.strokeStyle = "rgba(15, 23, 42, 0.35)";
-  context.strokeRect(x * size, y * size, size, size);
+function cell(c, x, y, type, size = 24, alpha = 1) {
+  c.globalAlpha = alpha;
+  c.fillStyle = colors[type];
+  c.fillRect(x + 1, y + 1, size - 2, size - 2);
+  c.fillStyle = "#ffffff30";
+  c.fillRect(x + 3, y + 3, size - 6, 3);
+  c.globalAlpha = 1;
 }
-
-function drawBoard() {
-  ctx.fillStyle = COLORS.EMPTY;
-  ctx.fillRect(0, 0, canvasWidth, canvasHeight);
-  for (let y = 0; y < ROWS; y += 1) {
-    for (let x = 0; x < COLS; x += 1) {
-      const cell = board[y][x];
-      if (cell) {
-        drawCell(ctx, x, y, COLORS[cell], blockSize);
-      }
-    }
-  }
-}
-
-function drawPiece(matrix, offsetX, offsetY, color, context, size) {
-  matrix.forEach((row, y) => {
-    row.forEach((value, x) => {
-      if (!value) return;
-      drawCell(context, offsetX + x, offsetY + y, color, size);
-    });
-  });
-}
-
-function getGhostPosition() {
-  let ghostY = current.y;
-  while (!collides(current.matrix, current.x, ghostY + 1)) {
-    ghostY += 1;
-  }
-  return ghostY;
-}
-
-function drawGhost() {
-  const ghostY = getGhostPosition();
-  drawPiece(current.matrix, current.x, ghostY, COLORS.GHOST, ctx, blockSize);
-}
-
-function drawCurrent() {
-  drawPiece(
-    current.matrix,
-    current.x,
-    current.y,
-    COLORS[current.type],
-    ctx,
-    blockSize
+function piece(c, m, ox, oy, type, size = 24, alpha = 1) {
+  m.forEach((r, y) =>
+    r.forEach((v, x) => {
+      if (v && oy + y * size >= 0)
+        cell(c, ox + x * size, oy + y * size, type, size, alpha);
+    }),
   );
 }
-
-function drawNext() {
-  const nextCtx = nextContexts[0];
-  if (!nextCtx) return;
-  nextCtx.clearRect(0, 0, nextCtx.canvas.width, nextCtx.canvas.height);
-  nextCtx.fillStyle = COLORS.EMPTY;
-  nextCtx.fillRect(0, 0, nextCtx.canvas.width, nextCtx.canvas.height);
-  const type = nextQueue[0];
-  if (!type) return;
-  const size = nextCtx.canvas.width / 4;
-  const matrix = SHAPES[type];
-  const offset = Math.floor((4 - matrix.length) / 2);
-  drawPiece(matrix, offset, offset, COLORS[type], nextCtx, size);
-}
-
-function draw() {
-  drawBoard();
-  drawGhost();
-  drawCurrent();
-  drawNext();
-}
-
-function movePiece(dir) {
-  if (isPaused || isGameOver) return;
-  if (!collides(current.matrix, current.x + dir, current.y)) {
-    current.x += dir;
-  }
-}
-
-function softDrop() {
-  if (isPaused || isGameOver) return;
-  if (!collides(current.matrix, current.x, current.y + 1)) {
-    current.y += 1;
-  } else {
-    lockPiece();
-  }
-  dropCounter = 0;
-}
-
-function hardDrop() {
-  if (isPaused || isGameOver) return;
-  const ghostY = getGhostPosition();
-  const distance = ghostY - current.y;
-  current.y = ghostY;
-  score += distance * 2;
-  lockPiece();
-}
-
-function rotatePiece(direction) {
-  if (isPaused || isGameOver) return;
-  const rotated = rotateMatrix(current.matrix, direction);
-  for (const offset of KICK_TESTS) {
-    if (!collides(rotated, current.x + offset, current.y)) {
-      current.matrix = rotated;
-      current.x += offset;
-      resetLockDelay();
-      return;
+function draw(c) {
+  c.fillStyle = "#101117";
+  c.fillRect(0, 0, 352, 480);
+  c.strokeStyle = "#242630";
+  for (let y = 0; y < 20; y++)
+    for (let x = 0; x < 10; x++) {
+      c.strokeRect(x * 24, y * 24, 24, 24);
+      if (board?.[y][x]) cell(c, x * 24, y * 24, board[y][x]);
     }
-  }
+  if (!current) return;
+  piece(c, current.m, current.x * 24, ghost() * 24, current.type, 24, 0.19);
+  piece(c, current.m, current.x * 24, current.y * 24, current.type);
+  c.fillStyle = "#a4a5ad";
+  c.font = "11px system-ui";
+  c.fillText("HOLD / C", 260, 24);
+  c.fillText("NEXT", 260, 142);
+  if (held) piece(c, SHAPES[held], 253, 45, held, 20, canHold ? 1 : 0.4);
+  queue
+    .slice(0, 3)
+    .forEach((type, i) => piece(c, SHAPES[type], 253, 165 + i * 94, type, 20));
 }
-
-function resetLockDelay() {
-  if (collides(current.matrix, current.x, current.y + 1)) {
-    lockTimer = 0;
-  }
-}
-
-function isGrounded() {
-  return collides(current.matrix, current.x, current.y + 1);
-}
-
-function stepDown() {
-  if (!isGrounded()) {
-    current.y += 1;
+const keys = {
+  ArrowLeft: "left",
+  KeyA: "left",
+  ArrowRight: "right",
+  KeyD: "right",
+  ArrowDown: "down",
+  KeyS: "down",
+  ArrowUp: "rotate",
+  KeyW: "rotate",
+  KeyX: "rotate",
+  KeyZ: "ccw",
+  Space: "drop",
+  KeyC: "hold",
+  ShiftLeft: "hold",
+};
+const ui = setup("tetris", "Make room.", 352, 480, {
+  reset,
+  input,
+  update,
+  draw,
+  key(code, repeat) {
+    const action = keys[code];
+    if (!action) return false;
+    if (!repeat || ["left", "right", "down"].includes(action)) input(action);
     return true;
-  }
-  return false;
-}
-
-function updateHorizontalMovement(delta) {
-  let nextDir = 0;
-  if (moveLeftHeld && moveRightHeld) {
-    nextDir = lastMoveDir;
-  } else if (moveLeftHeld) {
-    nextDir = -1;
-  } else if (moveRightHeld) {
-    nextDir = 1;
-  }
-
-  if (nextDir === 0) {
-    activeMoveDir = 0;
-    dasTimer = 0;
-    arrTimer = 0;
-    return;
-  }
-
-  if (activeMoveDir !== nextDir) {
-    activeMoveDir = nextDir;
-    dasTimer = 0;
-    arrTimer = 0;
-    movePiece(activeMoveDir);
-    resetLockDelay();
-    return;
-  }
-
-  dasTimer += delta;
-  if (dasTimer < DAS_DELAY) return;
-  arrTimer += delta;
-  while (arrTimer >= ARR_INTERVAL) {
-    movePiece(activeMoveDir);
-    resetLockDelay();
-    arrTimer -= ARR_INTERVAL;
-  }
-}
-
-function lockPiece() {
-  mergePiece();
-  if (isGameOver) return;
-  clearLines();
-  lockTimer = 0;
-  dropCounter = 0;
-  spawnPiece();
-}
-
-function resetGame() {
-  board = createBoard();
-  nextQueue = [];
-  bag = [];
-  score = 0;
-  level = 1;
-  lines = 0;
-  dropInterval = 800;
-  dropCounter = 0;
-  lastTime = 0;
-  isPaused = false;
-  isGameOver = false;
-  lockTimer = 0;
-  softDropActive = false;
-  moveLeftHeld = false;
-  moveRightHeld = false;
-  lastMoveDir = 0;
-  activeMoveDir = 0;
-  dasTimer = 0;
-  arrTimer = 0;
-  statusText.textContent =
-    "Arrows move. Z/X rotate. Space hard drop. P pause. R restart.";
-  updateScoreboard();
-  spawnPiece();
-}
-
-function togglePause() {
-  if (isGameOver) return;
-  isPaused = !isPaused;
-  statusText.textContent = isPaused
-    ? "Paused. Press P to resume."
-    : "Arrows move. Z/X rotate. Space hard drop. P pause. R restart.";
-}
-
-function update(time = 0) {
-  const delta = time - lastTime;
-  lastTime = time;
-  if (!isPaused && !isGameOver) {
-    updateHorizontalMovement(delta);
-    dropCounter += delta;
-    const currentDropInterval = softDropActive
-      ? SOFT_DROP_INTERVAL
-      : dropInterval;
-    if (dropCounter > currentDropInterval) {
-      dropCounter = 0;
-      if (!stepDown()) {
-        lockTimer = Math.max(lockTimer, 0);
-      }
-    }
-    if (isGrounded()) {
-      lockTimer += delta;
-      if (lockTimer >= LOCK_DELAY) {
-        lockPiece();
-      }
-    } else {
-      lockTimer = 0;
-    }
-  }
-  draw();
-  requestAnimationFrame(update);
-}
-
-function handleKeyDown(event, fromMessage = false) {
-  const { key, code } = event;
-  const safeKey = key || "";
-  const lowered = safeKey.toLowerCase();
-
-  // Safety: if ever typing into an input/textarea/contenteditable, don't hijack
-  const ae = document.activeElement;
-  const tag = ae?.tagName || "";
-  const isTyping =
-    tag === "INPUT" || tag === "TEXTAREA" || (ae && ae.isContentEditable);
-
-  if (!fromMessage && isTyping) return;
-
-  const isSpace = safeKey === " " || code === "Space";
-
-  // Always prevent scroll for gameplay keys (even in fullscreen)
-  if (!fromMessage && (scrollKeys.has(safeKey) || isSpace || ["z", "x", "p", "r"].includes(lowered))) {
-    event.preventDefault();
-  }
-
-  // Prefer code to be stable across layouts
-  if (code === "ArrowLeft") {
-    if (!moveLeftHeld) {
-      moveLeftHeld = true;
-      lastMoveDir = -1;
-      activeMoveDir = 0;
-      dasTimer = 0;
-      arrTimer = 0;
-      movePiece(-1);
-      resetLockDelay();
-    }
-  }
-  if (code === "ArrowRight") {
-    if (!moveRightHeld) {
-      moveRightHeld = true;
-      lastMoveDir = 1;
-      activeMoveDir = 0;
-      dasTimer = 0;
-      arrTimer = 0;
-      movePiece(1);
-      resetLockDelay();
-    }
-  }
-  if (code === "ArrowDown") {
-    softDropActive = true;
-  }
-  if (code === "Space") hardDrop();
-  if (code === "ArrowUp" || code === "KeyX") rotatePiece(1);
-  if (code === "KeyZ") rotatePiece(-1);
-  if (code === "KeyP") togglePause();
-  if (code === "KeyR") resetGame();
-}
-
-
-function handleKeyUp(event, fromMessage = false) {
-  // keep for future (DAS/ARR), but prevent scroll if needed
-  if (!fromMessage) {
-    const { key, code } = event;
-    const safeKey = key || "";
-    const isSpace = safeKey === " " || code === "Space";
-    const lowered = safeKey.toLowerCase();
-    if (scrollKeys.has(safeKey) || isSpace || ["z", "x", "p", "r"].includes(lowered)) {
-      event.preventDefault();
-    }
-  }
-  if (event.code === "ArrowLeft") {
-    moveLeftHeld = false;
-  }
-  if (event.code === "ArrowRight") {
-    moveRightHeld = false;
-  }
-  if (event.code === "ArrowDown") {
-    softDropActive = false;
-  }
-}
-
-window.addEventListener("keydown", handleKeyDown);
-window.addEventListener("keyup", handleKeyUp);
-
-window.addEventListener("message", (event) => {
-  const data = event.data;
-  if (!data || data.type !== "arcade:key") return;
-  const synthetic = {
-    key: data.key || "",
-    code: data.code || "",
-    preventDefault() {},
-  };
-  if (data.down) {
-    handleKeyDown(synthetic, true);
-  } else {
-    handleKeyUp(synthetic, true);
-  }
+  },
 });
-
-function resizeCanvas() {
-  if (!layout) return;
-  const layoutRect = layout.getBoundingClientRect();
-  let availableWidth = layoutRect.width;
-  const availableHeight = layoutRect.height;
-  if (sidePanel) {
-    const panelRect = sidePanel.getBoundingClientRect();
-    const panelBelow = panelRect.top - layoutRect.top > 1;
-    if (!panelBelow) {
-      const gap = Number.parseFloat(getComputedStyle(layout).columnGap) || 0;
-      availableWidth = Math.max(0, availableWidth - panelRect.width - gap);
-    }
-  }
-
-  const maxBlockByHeight = Math.floor(availableHeight / ROWS);
-  const maxBlockByWidth = Math.floor(availableWidth / COLS);
-  const nextBlockSize = Math.max(1, Math.min(maxBlockByHeight, maxBlockByWidth));
-  const displayWidth = nextBlockSize * COLS;
-  const displayHeight = nextBlockSize * ROWS;
-  const deviceScale = window.devicePixelRatio || 1;
-
-  blockSize = nextBlockSize;
-  canvasWidth = displayWidth;
-  canvasHeight = displayHeight;
-  canvas.style.width = `${displayWidth}px`;
-  canvas.style.height = `${displayHeight}px`;
-  canvas.width = Math.max(1, Math.floor(displayWidth * deviceScale));
-  canvas.height = Math.max(1, Math.floor(displayHeight * deviceScale));
-  ctx.setTransform(deviceScale, 0, 0, deviceScale, 0, 0);
-}
-
-function focusGame() {
-  if (gameShell && document.activeElement !== gameShell) {
-    gameShell.focus();
-  }
-}
-
-function updateLayoutMode() {
-  const isFullscreen = Boolean(document.fullscreenElement);
-  const compact =
-    !isFullscreen && (window.innerWidth < 700 || window.innerHeight < 700);
-  document.body.classList.toggle("is-fullscreen", isFullscreen);
-  document.body.classList.toggle("compact", compact);
-  resizeCanvas();
-}
-
-function handleFullscreenChange() {
-  updateLayoutMode();
-  focusGame();
-}
-
-canvas.addEventListener("pointerdown", focusGame);
-layout?.addEventListener("pointerdown", focusGame);
-window.addEventListener("load", focusGame);
-window.addEventListener("resize", updateLayoutMode);
-document.addEventListener("fullscreenchange", handleFullscreenChange);
-
-restartBtn.addEventListener("click", resetGame);
-
-bestValue.textContent = String(bestScore);
-updateLayoutMode();
-resetGame();
-requestAnimationFrame(update);
+reset();

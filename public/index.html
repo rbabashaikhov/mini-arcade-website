@@ -1,114 +1,22 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Arcade Lab</title>
-    <link rel="stylesheet" href="./styles.css" />
-  </head>
-  <body>
-    <div class="page">
-      <div class="app-shell">
-        <aside class="sidebar" id="sidebar">
-          <div class="sidebar-header">
-            <div class="brand sidebar-brand">
-              <img src="./assets/logo.svg" alt="Arcade Lab logo" class="logo" />
-              <div class="brand-text">
-                <p class="eyebrow">Mini Arcade</p>
-                <h1>Arcade Lab</h1>
-              </div>
-            </div>
-            <button
-              id="sidebarToggle"
-              class="icon-button"
-              type="button"
-              aria-label="Collapse sidebar"
-            >
-              <span class="chevron" aria-hidden="true">‹</span>
-            </button>
-          </div>
-
-          <label class="search sidebar-search">
-            <span class="sr-only">Search games</span>
-            <input
-              id="searchInput"
-              type="search"
-              placeholder="Search games"
-              autocomplete="off"
-            />
-          </label>
-
-          <div class="sidebar-meta">
-            <p id="gamesCount" class="muted">Loading...</p>
-          </div>
-
-          <nav id="cardsGrid" class="nav-list" aria-live="polite"></nav>
-
-          <div class="sidebar-footer">
-            <button id="themeToggle" class="ghost-button" type="button">
-              Toggle theme
-            </button>
-          </div>
-        </aside>
-
-        <button
-          id="sidebarOverlay"
-          class="sidebar-overlay"
-          type="button"
-          aria-label="Close game menu"
-        ></button>
-
-        <main class="main">
-          <header class="main-header">
-            <button
-              id="mobileMenuBtn"
-              class="icon-button"
-              type="button"
-              aria-label="Open game menu"
-            >
-              <span class="menu-icon" aria-hidden="true">☰</span>
-            </button>
-            <div class="now-playing">
-              <h2 id="nowPlayingTitle">Select a game</h2>
-              <p id="controlsHint" class="muted">Choose a game to begin.</p>
-            </div>
-            <div class="controls-bar" role="group" aria-label="Game controls">
-              <button id="restartBtn" class="primary-button" type="button">
-                Restart
-              </button>
-              <button id="fullscreenBtn" class="ghost-button" type="button">
-                Fullscreen
-              </button>
-              <button id="openBtn" class="ghost-button" type="button">
-                Open in new tab
-              </button>
-            </div>
-          </header>
-
-          <div class="stage-wrapper">
-            <div class="play-area">
-              <div id="iframeLoader" class="iframe-loader" aria-hidden="true">
-                <div class="spinner"></div>
-                <span>Loading game...</span>
-              </div>
-              <iframe
-                id="gameFrame"
-                title="Mini Arcade game"
-                loading="lazy"
-                scrolling="no"
-                sandbox="allow-scripts allow-same-origin"
-              ></iframe>
-            </div>
-
-            <aside class="stage-panel" id="stagePanel" aria-label="How to play">
-              <p class="eyebrow">How to play</p>
-              <p id="stagePanelHint" class="muted"></p>
-            </aside>
-          </div>
-        </main>
-      </div>
-    </div>
-
-    <script src="./app.js"></script>
-  </body>
-</html>
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Arcade Lab — Small games. Big energy.</title>
+<meta name="description" content="Eight reimagined arcade classics. Play instantly with keyboard or touch. No downloads, no accounts — just one more round.">
+<meta property="og:title" content="Arcade Lab"><meta property="og:description" content="Small games. Big energy. Eight free browser classics, reimagined."><meta property="og:type" content="website"><meta property="og:image" content="assets/cover.svg">
+<meta name="theme-color" content="#101114"><link rel="icon" href="assets/logo.svg" type="image/svg+xml"><link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to games</a>
+<header class="site-header"><a class="brand" href="#" aria-label="Arcade Lab home"><img src="assets/logo.svg" alt="" width="36" height="36"><span>ARCADE<span class="brand-light">LAB</span><sup>®</sup></span></a><nav aria-label="Main navigation"><button id="libraryBtn" class="nav-active">The library <span>08</span></button><a href="https://github.com/rbabashaikhov/mini-arcade-website" target="_blank" rel="noopener">Source ↗</a></nav><button id="themeToggle" aria-label="Switch to light theme" title="Change display theme">◐ <span>Display</span></button></header>
+<main id="main">
+<section id="libraryView">
+<div class="hero"><div class="hero-copy"><p class="eyebrow"><span class="status-dot"></span> INSERT CURIOSITY. PRESS PLAY.</p><h1>Small games.<br><span>Big energy.</span></h1><p class="hero-description">Your next high score starts here. Eight classics,<br class="desktop-break"> reimagined for a quick escape.</p><div class="hero-actions"><button id="surpriseBtn" class="primary">Find my next game <span>↗</span></button><span class="free-note">No downloads.<br>No quarters needed.</span></div></div><button class="feature" id="featureBtn" aria-label="Play Tetris"><img src="assets/cover.svg" alt="Original illustration of colorful falling blocks in a dark arcade"><span class="feature-top"><span>IN THE SPOTLIGHT</span><span>01 / 08</span></span><span class="feature-bottom"><span><small>THE PERFECT FIT</small><strong>Tetris</strong></span><span class="round-arrow">↗</span></span></button></div>
+<section class="library-section" aria-labelledby="libraryTitle"><div class="section-heading"><div><p class="eyebrow">PICK YOUR NEXT OBSESSION</p><h2 id="libraryTitle">The collection <span id="gamesCount">08</span></h2></div><label class="search"><span aria-hidden="true">⌕</span><span class="sr-only">Search games</span><input id="searchInput" type="search" placeholder="Find your game…" autocomplete="off"></label></div><div class="filter-row" role="group" aria-label="Filter games"><button class="filter active" data-filter="all" aria-pressed="true">All games</button><button class="filter" data-filter="arcade" aria-pressed="false">Arcade</button><button class="filter" data-filter="puzzle" aria-pressed="false">Puzzle & strategy</button><button class="filter" data-filter="action" aria-pressed="false">Action</button><span>BUILT FOR KEYBOARD + TOUCH</span></div><div id="cardsGrid" class="cards-grid"></div><div id="emptyState" class="empty-state" hidden><h3>No games in this orbit.</h3><p>Try another title or clear your filters.</p><button id="clearSearch">Show all games</button></div><p id="libraryStatus" role="status"></p></section>
+<div class="bottom-note"><span class="mini-star">✳</span><div><strong>Old-school spirit. New-school play.</strong><p>Handcrafted classics. Zero installs. Always one more round.</p></div><span class="note-end">8 GAMES · ENDLESS REPLAYS</span></div>
+</section>
+<section id="playView" hidden aria-labelledby="nowPlayingTitle"><div class="play-heading"><button id="backBtn">← Library</button><div class="play-title"><p class="eyebrow" id="gameCategory"></p><h1 id="nowPlayingTitle"></h1></div><div class="play-actions"><button id="restartBtn">↻ <span>Restart</span></button><button id="fullscreenBtn">⛶ <span>Fullscreen</span></button><a id="openBtn" target="_blank" rel="noopener" aria-label="Open game in new tab">↗</a></div></div><p id="gameDescription" class="game-description"></p><div id="playArea" class="play-area"><iframe id="gameFrame" title="Arcade game" allow="fullscreen" allowfullscreen></iframe><div id="iframeLoader" class="iframe-loader" role="status"><span class="loading-mark">✳</span><p id="loadMessage">Warming up the arcade…</p><button id="retryBtn" hidden>Try again</button></div></div><div class="play-footer"><p id="controlsHint"></p><span id="playStatus" role="status">READY WHEN YOU ARE</span></div></section>
+</main><footer class="site-footer"><a class="footer-brand" href="#">ARCADE LAB</a><span>A little nostalgia. A lot of play.</span><span>MADE FOR THE JOY OF IT ↗</span></footer>
+<script type="module" src="app.js"></script>
+</body></html>

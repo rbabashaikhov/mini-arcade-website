@@ -1,49 +1,53 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Snake</title>
-    <link rel="stylesheet" href="./style.css" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Snake · Arcade Lab</title>
+    <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <main id="gameShell" class="game-shell" tabindex="0">
-      <header class="game-header">
+    <main>
+      <header>
         <div>
-          <p class="eyebrow">Mini Arcade</p>
+          <small>ARCADE LAB / 04</small>
           <h1>Snake</h1>
-          <p class="muted">Eat apples, grow longer, and avoid crashing.</p>
         </div>
-        <button id="restartBtn" type="button">Restart</button>
+        <div class="actions">
+          <button id="pauseBtn">Pause</button
+          ><button id="restartBtn">Restart</button>
+        </div>
       </header>
-
-      <section class="scoreboard" aria-live="polite">
-        <div>
-          <span class="label">Score</span>
-          <span id="scoreValue" class="value">0</span>
-        </div>
-        <div>
-          <span class="label">Best</span>
-          <span id="bestValue" class="value">0</span>
-        </div>
-        <div>
-          <span class="label">Speed</span>
-          <span id="speedValue" class="value">1</span>
-        </div>
-        <div class="wrap-toggle">
-          <label for="wrapToggle">Wrap walls</label>
-          <input id="wrapToggle" type="checkbox" />
-        </div>
+      <section class="hud">
+        <span>Score<strong id="score">0</strong></span
+        ><span>Best<strong id="best">0</strong></span
+        ><span id="extra">SPEED 01</span>
       </section>
-
-      <canvas id="snakeCanvas" width="600" height="400" aria-label="Snake game">
-      </canvas>
-
-      <p id="statusText" class="status muted">
-        Arrows/WASD to move. Space to pause. R to restart.
-      </p>
+      <div class="stage">
+        <canvas
+          tabindex="0"
+          aria-label="Snake board. Use arrow keys or swipe to steer."
+        ></canvas>
+        <div class="overlay">
+          <h2 id="stateTitle"></h2>
+          <p>
+            Collect the coral fruit. Keep moving, keep growing. Avoid your own
+            trail.
+          </p>
+          <button id="startBtn">Start game</button>
+        </div>
+      </div>
+      <label class="options"
+        ><input id="wrapToggle" type="checkbox" />Wrap through walls</label
+      >
+      <div class="controls" aria-label="Movement">
+        <button data-action="left" aria-label="Move left">←</button
+        ><button data-action="up" aria-label="Move up">↑</button
+        ><button data-action="down" aria-label="Move down">↓</button
+        ><button data-action="right" aria-label="Move right">→</button>
+      </div>
+      <p class="hint">Arrows / WASD or swipe to steer · P pause · R restart</p>
     </main>
-
-    <script src="./game.js"></script>
+    <script type="module" src="game.js"></script>
   </body>
 </html>

@@ -1,67 +1,55 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Tetris</title>
-    <link rel="stylesheet" href="./style.css" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Tetris · Arcade Lab</title>
+    <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <main class="game-shell" id="gameShell" tabindex="0">
-      <header class="game-header">
+    <main>
+      <header>
         <div>
-          <p class="eyebrow">Mini Arcade</p>
+          <small>ARCADE LAB / 03</small>
           <h1>Tetris</h1>
-          <p class="muted tagline">Stack clean lines and climb the levels.</p>
         </div>
-        <button id="restartBtn" type="button">Restart</button>
+        <div class="actions">
+          <button id="pauseBtn">Pause</button
+          ><button id="restartBtn">Restart</button>
+        </div>
       </header>
-
-      <section class="scoreboard" aria-live="polite">
-        <div>
-          <span class="label">Score</span>
-          <span id="scoreValue" class="value">0</span>
-        </div>
-        <div>
-          <span class="label">Level</span>
-          <span id="levelValue" class="value">1</span>
-        </div>
-        <div>
-          <span class="label">Lines</span>
-          <span id="linesValue" class="value">0</span>
-        </div>
-        <div class="stat-best">
-          <span class="label">Best</span>
-          <span id="bestValue" class="value">0</span>
-        </div>
+      <section class="hud">
+        <span>Score<strong id="score">0</strong></span
+        ><span>Best<strong id="best">0</strong></span
+        ><span id="extra"></span>
       </section>
-
-      <section class="layout">
-        <div class="tetris-stage">
-          <canvas
-            id="tetrisCanvas"
-            width="300"
-            height="600"
-            tabindex="0"
-            aria-label="Tetris board"
-          ></canvas>
-
-          <aside class="side-panel">
-            <div class="panel-block">
-              <h2>Next</h2>
-              <div class="next-preview">
-                <canvas class="nextCanvas" width="120" height="120"></canvas>
-              </div>
-            </div>
-          </aside>
+      <div class="stage">
+        <canvas
+          tabindex="0"
+          aria-label="Tetris board, hold and next pieces"
+        ></canvas>
+        <div class="overlay">
+          <h2 id="stateTitle"></h2>
+          <p>
+            Find the fit. Clear complete rows. Use hold to save a piece for the
+            perfect moment.
+          </p>
+          <button id="startBtn">Start game</button>
         </div>
-      </section>
-
-      <p id="statusText" class="status muted">
-        Arrows move. Z/X rotate. Space hard drop. P pause. R restart.
+      </div>
+      <div class="controls" aria-label="Piece controls">
+        <button data-action="hold">Hold</button
+        ><button data-action="left" aria-label="Move left">←</button
+        ><button data-action="rotate" aria-label="Rotate clockwise">↻</button
+        ><button data-action="right" aria-label="Move right">→</button
+        ><button data-action="down" aria-label="Soft drop">↓</button
+        ><button data-action="drop">Drop</button>
+      </div>
+      <p class="hint">
+        ← → move · ↑ / X rotate · Z reverse · ↓ soft drop · Space drop · C hold
+        · P pause
       </p>
     </main>
-
-    <script src="./game.js"></script>
+    <script type="module" src="game.js"></script>
   </body>
 </html>

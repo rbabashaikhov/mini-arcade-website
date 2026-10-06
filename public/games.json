@@ -1,74 +1,143 @@
 [
   {
-    "slug": "whack-a-mole",
-    "title": "Whack-a-Mole",
-    "description": "Tap the sneaky mole before it disappears.",
-    "controls": "Click or tap the mole. 30 seconds to score.",
-    "path": "games/whack-a-mole/index.html",
-    "tags": ["reflex", "tap"],
-    "difficulty": "Easy"
-  },
-  {
-    "slug": "pong",
-    "title": "Pong",
-    "description": "Classic paddle duel. First to 10 wins.",
-    "controls": "W/S or Up/Down. Space to serve.",
-    "path": "games/pong/index.html",
-    "tags": ["classic", "arcade"],
-    "difficulty": "Easy"
-  },
-  {
     "slug": "tetris",
     "title": "Tetris",
-    "description": "Stack falling blocks, clear lines, and level up.",
-    "controls": "Arrows move, Z/X rotate, Space hard drop, C hold, P pause.",
+    "description": "Find your flow. Build, clear, repeat.",
+    "controls": "Arrows move, Z/X rotate, Space hard drop, C hold, P pause. P pause · R restart.",
     "path": "games/tetris/index.html",
-    "tags": ["puzzle", "classic"],
-    "difficulty": "Medium"
+    "tags": [
+      "puzzle",
+      "classic"
+    ],
+    "difficulty": "Medium",
+    "category": "puzzle",
+    "accent": "#b7a0ff",
+    "inputLabel": "Keys / Touch",
+    "mobile": true,
+    "artwork": "assets/thumbs/tetris.svg"
   },
   {
     "slug": "snake",
     "title": "Snake",
-    "description": "Eat apples, grow longer, and avoid crashing.",
-    "controls": "Arrows/WASD, Space pause, R restart.",
+    "description": "A little longer. A little faster. One more bite.",
+    "controls": "Arrows/WASD, Space pause, R restart. P pause · R restart.",
     "path": "games/snake/index.html",
-    "tags": ["classic", "arcade", "reflex"],
-    "difficulty": "Easy"
+    "tags": [
+      "classic",
+      "arcade",
+      "reflex"
+    ],
+    "difficulty": "Easy",
+    "category": "arcade",
+    "accent": "#b9e978",
+    "inputLabel": "Keys / Swipe",
+    "mobile": true,
+    "artwork": "assets/thumbs/snake.svg"
+  },
+  {
+    "slug": "pong",
+    "title": "Pong",
+    "description": "Two paddles. One ball. Settle the score.",
+    "controls": "W/S or Up/Down. Space to serve. P pause · R restart.",
+    "path": "games/pong/index.html",
+    "tags": [
+      "classic",
+      "arcade"
+    ],
+    "difficulty": "Easy",
+    "category": "arcade",
+    "accent": "#a2d9ff",
+    "inputLabel": "Keys / Drag",
+    "mobile": true,
+    "artwork": "assets/thumbs/pong.svg"
   },
   {
     "slug": "space-invaders",
     "title": "Space Invaders",
-    "description": "Defend Earth from descending invaders. Shoot, dodge, survive.",
-    "controls": "←/→ or A/D move · Space shoot · P pause · R restart",
+    "description": "Hold the line against a sky full of trouble.",
+    "controls": "←/→ or A/D move · Space shoot · P pause · R restart P pause · R restart.",
     "path": "games/space-invaders/index.html",
-    "tags": ["classic", "shooter", "arcade"],
-    "difficulty": "Medium"
+    "tags": [
+      "classic",
+      "shooter",
+      "arcade"
+    ],
+    "difficulty": "Medium",
+    "category": "action",
+    "accent": "#76e6ca",
+    "inputLabel": "Keys / Touch",
+    "mobile": true,
+    "artwork": "assets/thumbs/space-invaders.svg"
   },
   {
     "slug": "pacman",
     "title": "Pac-Man",
-    "description": "Eat pellets, dodge ghosts, grab power pellets to turn the tables.",
-    "controls": "Arrows/WASD move · P pause · R restart",
+    "description": "Chase the dots. Stay one turn ahead.",
+    "controls": "Arrows/WASD move · P pause · R restart P pause · R restart.",
     "path": "games/pacman/index.html",
-    "tags": ["classic", "maze", "arcade"],
-    "difficulty": "Medium"
+    "tags": [
+      "classic",
+      "maze",
+      "arcade"
+    ],
+    "difficulty": "Medium",
+    "category": "puzzle",
+    "accent": "#f6d66b",
+    "inputLabel": "Keys / Swipe",
+    "mobile": true,
+    "artwork": "assets/thumbs/pacman.svg"
   },
   {
     "slug": "flappy-bird",
     "title": "Flappy Bird",
-    "description": "Tap to fly through pipes. Simple, brutal, addictive.",
-    "controls": "Space/Click jump · P pause · R restart",
+    "description": "Find your rhythm between the obstacles.",
+    "controls": "Space/Click jump · P pause · R restart P pause · R restart.",
     "path": "games/flappy-bird/index.html",
-    "tags": ["classic", "arcade", "reflex"],
-    "difficulty": "Easy"
+    "tags": [
+      "classic",
+      "arcade",
+      "reflex"
+    ],
+    "difficulty": "Easy",
+    "category": "arcade",
+    "accent": "#f5acbd",
+    "inputLabel": "Space / Tap",
+    "mobile": true,
+    "artwork": "assets/thumbs/flappy-bird.svg"
   },
   {
     "slug": "asteroids",
     "title": "Asteroids",
-    "description": "Rotate, thrust, shoot. Classic space survival.",
-    "controls": "←/→ rotate · W/↑ thrust · Space shoot · P pause · R restart",
+    "description": "One ship. A whole field of possibilities.",
+    "controls": "←/→ rotate · W/↑ thrust · Space shoot · P pause · R restart P pause · R restart.",
     "path": "games/asteroids/index.html",
-    "tags": ["classic", "arcade", "space"],
-    "difficulty": "Medium"
+    "tags": [
+      "classic",
+      "arcade",
+      "space"
+    ],
+    "difficulty": "Medium",
+    "category": "action",
+    "accent": "#b9a1ff",
+    "inputLabel": "Keys / Touch",
+    "mobile": true,
+    "artwork": "assets/thumbs/asteroids.svg"
+  },
+  {
+    "slug": "whack-a-mole",
+    "title": "Whack-a-Mole",
+    "description": "Quick hands win. Catch them while you can.",
+    "controls": "Click or tap the mole. 30 seconds to score. P pause · R restart.",
+    "path": "games/whack-a-mole/index.html",
+    "tags": [
+      "reflex",
+      "tap"
+    ],
+    "difficulty": "Easy",
+    "category": "arcade",
+    "accent": "#ffc17b",
+    "inputLabel": "Click / Tap",
+    "mobile": true,
+    "artwork": "assets/thumbs/whack-a-mole.svg"
   }
 ]

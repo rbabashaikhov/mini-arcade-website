@@ -1,29 +1,50 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Pac-Man</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Pac-Man · Arcade Lab</title>
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <div class="game-shell" tabindex="0">
-      <header class="hud">
-        <div class="hud-left">
-          <span>Score: <strong id="score">0</strong></span>
-          <span>Best: <strong id="best">0</strong></span>
+    <main>
+      <header>
+        <div>
+          <small>ARCADE LAB / 06</small>
+          <h1>Pac-Man</h1>
         </div>
-        <div class="hud-right">
-          <span>Lives: <strong id="lives">3</strong></span>
-          <span>Level: <strong id="level">1</strong></span>
+        <div class="actions">
+          <button id="pauseBtn">Pause</button
+          ><button id="restartBtn">Restart</button>
         </div>
       </header>
-      <div class="canvas-wrap">
-        <canvas id="game" width="380" height="420" aria-label="Pac-Man canvas"></canvas>
-        <div class="overlay" id="overlay"></div>
+      <section class="hud">
+        <span>Score<strong id="score">0</strong></span
+        ><span>Best<strong id="best">0</strong></span
+        ><span id="extra"></span>
+      </section>
+      <div class="stage">
+        <canvas
+          tabindex="0"
+          aria-label="Pac-Man maze. Arrows or swipe to move."
+        ></canvas>
+        <div class="overlay">
+          <h2 id="stateTitle"></h2>
+          <p>
+            Clear every pellet. The large golden pellets turn the tables on your
+            pursuers.
+          </p>
+          <button id="startBtn">Start game</button>
+        </div>
       </div>
-      <footer class="hint">Arrows/WASD move · P pause · R restart</footer>
-    </div>
-    <script src="game.js"></script>
+      <div class="controls" aria-label="Movement">
+        <button data-action="left" aria-label="Move left">←</button
+        ><button data-action="up" aria-label="Move up">↑</button
+        ><button data-action="down" aria-label="Move down">↓</button
+        ><button data-action="right" aria-label="Move right">→</button>
+      </div>
+      <p class="hint">Arrows / WASD or swipe to steer · P pause · R restart</p>
+    </main>
+    <script type="module" src="game.js"></script>
   </body>
 </html>

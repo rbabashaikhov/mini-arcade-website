@@ -1,64 +1,67 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Asteroids</title>
-    <link rel="stylesheet" href="./style.css" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta
+      name="description"
+      content="Find your orbit. Break the field into dust and survive the next wave."
+    />
+    <title>Asteroids — Arcade Lab</title>
+    <link rel="stylesheet" href="style.css" />
   </head>
-  <body>
-    <main class="game-shell">
-      <header class="game-header">
+  <body data-state="ready">
+    <main>
+      <header>
         <div>
-          <p class="eyebrow">Mini Arcade</p>
+          <small>ARCADE LAB</small>
           <h1>Asteroids</h1>
-          <p class="muted">Rotate, thrust, and survive the field.</p>
         </div>
-        <div class="header-actions">
-          <button id="pauseBtn" type="button">Pause</button>
-          <button id="restartBtn" type="button">Restart</button>
+        <div class="actions">
+          <button id="pauseBtn" disabled>Pause</button
+          ><button id="restartBtn">Restart</button>
         </div>
       </header>
-
-      <section class="hud" aria-live="polite">
-        <div>
-          <span class="label">Score</span>
-          <span id="scoreValue" class="value">0</span>
-        </div>
-        <div>
-          <span class="label">Best</span>
-          <span id="bestValue" class="value">0</span>
-        </div>
-        <div>
-          <span class="label">Lives</span>
-          <span id="livesValue" class="value">3</span>
-        </div>
-        <div>
-          <span class="label">Level</span>
-          <span id="levelValue" class="value">1</span>
-        </div>
-        <div class="controls-hint">
-          <span class="label">Controls</span>
-          <span class="value">←/→ rotate · W/↑ thrust · Space · P · R</span>
-        </div>
+      <section class="hud" aria-label="Game statistics">
+        <div><span>Score</span><strong id="scoreValue">0</strong></div>
+        <div><span>Best</span><strong id="bestValue">0</strong></div>
+        <div><span>Lives</span><strong id="livesValue">3</strong></div>
+        <div><span>Wave</span><strong id="levelValue">1</strong></div>
       </section>
-
-      <section class="canvas-shell">
-        <div
-          id="gameWrapper"
-          class="game-wrapper"
-          tabindex="0"
-          aria-label="Asteroids game"
-        >
-          <canvas id="gameCanvas" width="720" height="520"></canvas>
+      <div
+        id="gameWrapper"
+        class="arena"
+        tabindex="0"
+        aria-label="Asteroids play field"
+      >
+        <canvas id="gameCanvas" aria-label="Asteroids arena"></canvas>
+        <section class="overlay" id="overlay">
+          <small>DEEP SPACE / SURVIVAL</small>
+          <h2 id="overlayTitle">Asteroids</h2>
+          <p id="overlayText">
+            Find your orbit. Break the field into dust and survive the next
+            wave.
+          </p>
+          <button id="startBtn">Start game</button>
+        </section>
+      </div>
+      <nav class="touch" aria-label="Touch game controls">
+        <div>
+          <button data-key="ArrowLeft" aria-label="Move or rotate left">
+            ←</button
+          ><button data-key="ArrowRight" aria-label="Move or rotate right">
+            →
+          </button>
         </div>
-      </section>
-
-      <p id="statusText" class="status muted">
-        Space shoots. P pauses. R restarts.
+        <div>
+          <button data-key="ArrowUp" aria-label="Thrust">Thrust ↑</button
+          ><button data-key="Space" class="fire">Fire ●</button>
+        </div>
+      </nav>
+      <p class="hint">
+        ← → or A D rotate · ↑ or W thrust · Space fire · P pause
       </p>
     </main>
-
-    <script src="./game.js"></script>
+    <script type="module" src="game.js"></script>
   </body>
 </html>

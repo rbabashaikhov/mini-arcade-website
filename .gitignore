@@ -16,3 +16,7 @@ node_modules/
 dist/
 build/
 
+# Package manager stores
+.pnpm-store/
+.npm/
+
