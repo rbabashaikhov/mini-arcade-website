@@ -171,7 +171,7 @@ function resize() {
     main.clientWidth -
       parseFloat(style.paddingLeft) -
       parseFloat(style.paddingRight),
-    (Math.max(160, room) * W) / H,
+    (Math.max(80, room) * W) / H,
   );
   arena.style.width = width + "px";
   arena.style.height = (width * H) / W + "px";

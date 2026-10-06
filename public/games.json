@@ -55,7 +55,7 @@
     "slug": "space-invaders",
     "title": "Space Invaders",
     "description": "Hold the line against a sky full of trouble.",
-    "controls": "←/→ or A/D move · Space shoot · P pause · R restart P pause · R restart.",
+    "controls": "← → or A D move · Space fire · P pause · R restart",
     "path": "games/space-invaders/index.html",
     "tags": [
       "classic",
@@ -73,7 +73,7 @@
     "slug": "pacman",
     "title": "Pac-Man",
     "description": "Chase the dots. Stay one turn ahead.",
-    "controls": "Arrows/WASD move · P pause · R restart P pause · R restart.",
+    "controls": "Arrows / WASD move · P pause · R restart",
     "path": "games/pacman/index.html",
     "tags": [
       "classic",
@@ -91,7 +91,7 @@
     "slug": "flappy-bird",
     "title": "Flappy Bird",
     "description": "Find your rhythm between the obstacles.",
-    "controls": "Space/Click jump · P pause · R restart P pause · R restart.",
+    "controls": "Space / tap to flap · P pause · R restart",
     "path": "games/flappy-bird/index.html",
     "tags": [
       "classic",
@@ -109,7 +109,7 @@
     "slug": "asteroids",
     "title": "Asteroids",
     "description": "One ship. A whole field of possibilities.",
-    "controls": "←/→ rotate · W/↑ thrust · Space shoot · P pause · R restart P pause · R restart.",
+    "controls": "← → rotate · W / ↑ thrust · Space shoot · P pause · R restart",
     "path": "games/asteroids/index.html",
     "tags": [
       "classic",

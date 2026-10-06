@@ -43,12 +43,12 @@ export function setup(slug, title, width, height, actions) {
   document.querySelector("#startBtn").onclick = () => {
     if (state !== "paused") actions.reset();
     setState("playing");
-    canvas.focus();
+    canvas.focus({ preventScroll: true });
   };
   document.querySelector("#restartBtn").onclick = () => {
     actions.reset();
     setState("playing");
-    canvas.focus();
+    canvas.focus({ preventScroll: true });
   };
   document.querySelector("#pauseBtn").onclick = pause;
   document.addEventListener("visibilitychange", () => {
